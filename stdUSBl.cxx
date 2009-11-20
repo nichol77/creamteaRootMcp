@@ -182,6 +182,6 @@ bool stdUSB::readData(unsigned short * pData, int l, int* lread)// throw(...)
         return SUCCEED;
     } else
         printf("error code: %s\n", strerror(-1 * retval));
-        *lread = retval;
-        return FAILED;
+    *lread = retval;
+    return FAILED;
 }
