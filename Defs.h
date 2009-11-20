@@ -1,6 +1,7 @@
 #ifndef DEFS
 #define DEFS
 
+#define NUM_TARGETS           4        // Number of target chips
 #define NUM_CHANNELS          16       // Number of channels
 #define NUM_ROWS              8        // Rows per channel
 #define NUM_COLS              32       // Columns per row

@@ -38,9 +38,9 @@ LIBS          = $(ROOTLIBS) -lMathMore -lMinuit $(SYSLIBS) $(LD_ANITA_UTIL) $(FF
 GLIBS         = $(ROOTGLIBS) $(SYSLIBS)
 
 #Now the bits we're actually compiling
-ROOT_LIBRARY = libTargetRoot.${DLLSUF}
-LIB_OBJS =  Target.o TargetDisplay.o WaveformGraph.o FFTGraph.o stdUSBl.o targetDict.o
-CLASS_HEADERS = Target.h TargetDisplay.h WaveformGraph.h FFTGraph.h
+ROOT_LIBRARY = libMcpTargetRoot.${DLLSUF}
+LIB_OBJS =  McpTarget.o McpTargetDisplay.o WaveformGraph.o FFTGraph.o stdUSBl.o targetDict.o
+CLASS_HEADERS = McpTarget.h McpTargetDisplay.h WaveformGraph.h FFTGraph.h
 
 
 all : $(ROOT_LIBRARY)

@@ -1,5 +1,5 @@
 //////////////////////////////////////////////////////////////////////////////
-/////  TargetDisplay.h        TargetDisplay                              /////
+/////  McpTargetDisplay.h        McpTargetDisplay                              /////
 /////                                                                    /////
 /////  Description:                                                      /////
 /////     This is a simple class to display data from the TARGET_eval    ///// 
@@ -12,9 +12,9 @@
 
 //Includes
 #include "TChain.h"
-//#include "TargetDisplayConventions.h"
+//#include "McpTargetDisplayConventions.h"
 
-#include "Target.h" //The interface class
+#include "McpTarget.h" //The interface class
 
 class TCanvas;
 class TPad;
@@ -23,14 +23,14 @@ class TTreeIndex;
 class TFile;
 class TThread;
 
-class TargetDisplay 
+class McpTargetDisplay 
 {
  public:
   
-  TargetDisplay();
-  ~TargetDisplay();
+  McpTargetDisplay();
+  ~McpTargetDisplay();
   
-  static TargetDisplay* Instance();
+  static McpTargetDisplay* Instance();
 
 
   //Event playback mode
@@ -47,16 +47,16 @@ class TargetDisplay
   int getEventDisplayPlaySleep() {return fEventPlaySleepMs;}
   void drawEventButtons();
 
-  Target *getTargetPointer() {return &(this->fTheTarget);}
+  McpTarget *getMcpTargetPointer() {return &(this->fTheMcpTarget);}
 
  protected:
-   static TargetDisplay *fgInstance;  
+   static McpTargetDisplay *fgInstance;  
    // protect against multiple instances
 
  private:
-   TCanvas *fTargetCanvas; //The main canvas
-   TPad *fTargetMainPad;
-   TPad *fTargetEventInfoPad;
+   TCanvas *fMcpTargetCanvas; //The main canvas
+   TPad *fMcpTargetMainPad;
+   TPad *fMcpTargetEventInfoPad;
 
    TButton *fWaveformButton;
    TButton *fPowerButton;
@@ -65,7 +65,7 @@ class TargetDisplay
    Int_t fEventPlaySleepMs;
    Int_t fView; //1 is waveforms, 2 is FFTs
 
-   Target fTheTarget;
+   McpTarget fTheMcpTarget;
 };
 
 

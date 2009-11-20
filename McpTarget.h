@@ -1,10 +1,10 @@
 ////////////////////////////////////////////////////////////////////////////////
-//////// Quickly thrown together ROOT code to read out TARGET             //////
+//////// Quickly thrown together ROOT code to read out MCPTARGET             //////
 //////// rjn@hep.ucl.ac.uk                                                //////
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef TARGET
-#define TARGET
+#ifndef MCPTARGET
+#define MCPTARGET
 //ROOT includes
 #include "TGraph.h"
 
@@ -14,11 +14,11 @@
 
 
 
-class Target 
+class McpTarget 
 {
  public:
-  Target();
-  ~Target();
+  McpTarget();
+  ~McpTarget();
 
   void generatePedestals();
   void loadPedestal();
@@ -47,14 +47,15 @@ class Target
   Int_t fExtTrigMode; ///< On or off
   Int_t fEventNumber; ///< Software event number
   Int_t fTargetEventNumber; ///< Event counter from Target??
-  Int_t fNumPedEvents;
-  UShort_t fBuffer[BUFFERSIZE];
-  UShort_t fReadoutBuffer[BUFFERSIZE+2];
-  Int_t fPedSubbedBuffer[NUM_CHANNELS][SAMPLES_PER_COL];
-  Int_t fPedestalValues[NUM_CHANNELS][NUM_ROWS][NUM_COLS][SAMPLES_PER_COL];
+  Int_t fNumPedEvents; ///< Number of pedestal events
+  UShort_t fBuffer[BUFFERSIZE]; ///< Arbitrarily sized buffer
+  UShort_t fReadoutBuffer[BUFFERSIZE+2]; ///<Arbitrarily sized bigger buffer
+  Int_t fPedSubbedBuffer[NUM_TARGETS][NUM_CHANNELS][SAMPLES_PER_COL]; ///<Again who knows or dares to dream
+  Float fDnlLUT[4096]; ///< No idea what this is, or why it is 4096
+  Float_t fPedestalValues[NUM_TARGETS][NUM_CHANNELS][NUM_ROWS][NUM_COLS][SAMPLES_PER_COL];
   Float_t fVoltBuffer[NUM_CHANNELS][SAMPLES_PER_COL];
 
 };
 
 
-#endif //TARGET
+#endif //MCPTARGET

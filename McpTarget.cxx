@@ -1,4 +1,4 @@
-#include "Target.h"
+#include "McpTarget.h"
 #include <iostream>
 #include <fstream>
 
@@ -9,7 +9,7 @@
 
 stdUSB fTheUsb;
 
-Target::Target() 
+McpTarget::McpTarget() 
   :fExtTrigMode(0),fEventNumber(0),fNumPedEvents(100)
 {
   for(int chan=0;chan<NUM_CHANNELS;chan++) {
@@ -41,12 +41,12 @@ Target::Target()
 
 }
 
-Target::~Target()
+McpTarget::~McpTarget()
 {
   fTheUsb.freeHandles();
 }
 
-void Target::generatePedestals() 
+void McpTarget::generatePedestals() 
 {
   short unsigned int *tmpBuffer = &fReadoutBuffer[0];
   int bytesRead;
@@ -113,7 +113,7 @@ void Target::generatePedestals()
   } 
 }
 
-int Target::readEvent()
+int McpTarget::readEvent()
 {
   //Read data from USB class (stdUSB.cpp) since we dont have the device yet 
   //then we are going to read data from test data file 	
@@ -155,12 +155,12 @@ int Target::readEvent()
   //  std::cout << "fPedSubbedBuffer[0][0] " << fPedSubbedBuffer[0][0] << "\n";
 
   fEventNumber++;
-  fTargetEventNumber=tmpBuffer[1];
+  fMcpTargetEventNumber=tmpBuffer[1];
   
   return 1;
 }
 
-void Target::setExtTrigMode(int mode)
+void McpTarget::setExtTrigMode(int mode)
 {
   if(fExtTrigMode==mode) return;
   fExtTrigMode=mode;
@@ -182,7 +182,7 @@ void Target::setExtTrigMode(int mode)
 
 }
 
-TGraph *Target::getChannel(int channel)
+TGraph *McpTarget::getChannel(int channel)
 {
   if(channel<0 || channel>=NUM_CHANNELS) return NULL;
   
@@ -197,7 +197,7 @@ TGraph *Target::getChannel(int channel)
 }
 
 
-void Target::loadPedestal() 
+void McpTarget::loadPedestal() 
 {
   Int_t value;
   std::ifstream PedFile("pedestal.txt");
@@ -217,7 +217,7 @@ void Target::loadPedestal()
 
 
 
-void Target::setPedRowCol(Int_t row, Int_t col)
+void McpTarget::setPedRowCol(Int_t row, Int_t col)
 {
   UInt_t dataVal=0;
   dataVal = PED_ROW_COL_MASK;
@@ -226,7 +226,7 @@ void Target::setPedRowCol(Int_t row, Int_t col)
   fTheUsb.sendData(dataVal); 
 }
 
-void Target::enablePedestal(Int_t flag)
+void McpTarget::enablePedestal(Int_t flag)
 {
   if(flag==1) {
     fTheUsb.sendData(ENABLE_PED_MASK);
@@ -236,7 +236,7 @@ void Target::enablePedestal(Int_t flag)
   }
 }
 
-void Target::asumOrDtrig(Int_t flag)
+void McpTarget::asumOrDtrig(Int_t flag)
 {
   if(flag==1) {
     fTheUsb.sendData(ENABLE_ASUM_MASK);
@@ -247,14 +247,14 @@ void Target::asumOrDtrig(Int_t flag)
   
 }
 
-void Target::setWbias(UInt_t value)
+void McpTarget::setWbias(UInt_t value)
 {
   UInt_t dataVal = WBIAS_MASK;
   dataVal |= (value << WBIAS_SHIFT);
   fTheUsb.sendData(dataVal);
 }
 
-void Target::setAsumThresh(UInt_t value) 
+void McpTarget::setAsumThresh(UInt_t value) 
 {
   UInt_t dataVal=ASUM_THRESH_MASK;
   dataVal |= (value&0xffff) << TRIG_THRESH_SHIFT;
@@ -262,14 +262,14 @@ void Target::setAsumThresh(UInt_t value)
 }
 
 
-void Target::setTrigThresh(UInt_t value)
+void McpTarget::setTrigThresh(UInt_t value)
 {
   UInt_t dataVal=TRIG_THRESH_MASK;
   dataVal |= (value&0xffff) << TRIG_THRESH_SHIFT;
   fTheUsb.sendData(dataVal);
 }
 
-void Target::setTermValue(Int_t f100, Int_t f1k, Int_t f10k) 
+void McpTarget::setTermValue(Int_t f100, Int_t f1k, Int_t f10k) 
 {
   UInt_t dataVal=TERM_MASK;
   dataVal |= (f100&0x1) << TERM_100_OHMS_SHIFT;
@@ -280,7 +280,7 @@ void Target::setTermValue(Int_t f100, Int_t f1k, Int_t f10k)
 }
 
 
-void Target::setTrigPolarity(Int_t flag)
+void McpTarget::setTrigPolarity(Int_t flag)
 {
   if(flag==1) {
     fTheUsb.sendData(TRIG_POLARITY_NEG);
@@ -291,7 +291,7 @@ void Target::setTrigPolarity(Int_t flag)
 }
 
 
-void Target:: useSyncUsb(Int_t flag)
+void McpTarget:: useSyncUsb(Int_t flag)
 {
   if(flag==1) {
     fTheUsb.sendData(ENABLE_SYNC_USB_MASK);
@@ -301,12 +301,12 @@ void Target:: useSyncUsb(Int_t flag)
   }
 }
 
-void Target:: sendSoftTrig()
+void McpTarget:: sendSoftTrig()
 {
   fTheUsb.sendData(SOFT_TRIG_MASK);
 }
 
-void Target:: useEventCounter(Int_t flag)
+void McpTarget:: useEventCounter(Int_t flag)
 {
   if(flag==1) {
     fTheUsb.sendData(ENABLE_EVENT_COUNTER_MASK);
@@ -317,7 +317,7 @@ void Target:: useEventCounter(Int_t flag)
 }
 
 
-void Target::getMemAddress(UInt_t memAddrSpace, UInt_t &rowLoc, UInt_t &colLoc,
+void McpTarget::getMemAddress(UInt_t memAddrSpace, UInt_t &rowLoc, UInt_t &colLoc,
 			   UInt_t &pixLoc)
 {
   const unsigned int MASK_COL = 0x000001F0;

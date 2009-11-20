@@ -1,5 +1,5 @@
 //////////////////////////////////////////////////////////////////////////////
-/////  TargetDisplay.cxx                                                 /////
+/////  McpTargetDisplay.cxx                                                 /////
 /////                                                                    /////
 /////  Description:                                                      /////
 /////     Class for making pretty event canvases for TARGET_eval         /////
@@ -9,8 +9,8 @@
 #include <fstream>
 #include <iostream>
 
-//Target Display Includes
-#include "TargetDisplay.h"
+//McpTarget Display Includes
+#include "McpTargetDisplay.h"
 #include "WaveformGraph.h"
 #include "FFTtools.h"
 
@@ -26,23 +26,23 @@
 
 using namespace std;
 
-TargetDisplay*  TargetDisplay::fgInstance = 0;
+McpTargetDisplay*  McpTargetDisplay::fgInstance = 0;
 //Leave these as global variables for now
 
-TargetDisplay::TargetDisplay()
+McpTargetDisplay::McpTargetDisplay()
 {
   //Default constructor
   fInEventPlayMode=0;
   fEventPlaySleepMs=0;
   fgInstance=this;
-  fTargetCanvas=0;
-  fTargetEventInfoPad=0;
-  fTargetMainPad=0;
+  fMcpTargetCanvas=0;
+  fMcpTargetEventInfoPad=0;
+  fMcpTargetMainPad=0;
   fView=1;
   
 }
 
-TargetDisplay::~TargetDisplay()
+McpTargetDisplay::~McpTargetDisplay()
 {
    //Default destructor
 }
@@ -52,39 +52,39 @@ TargetDisplay::~TargetDisplay()
 
 
 //______________________________________________________________________________
-TargetDisplay*  TargetDisplay::Instance()
+McpTargetDisplay*  McpTargetDisplay::Instance()
 {
    //static function
-   return (fgInstance) ? (TargetDisplay*) fgInstance : new TargetDisplay();
+   return (fgInstance) ? (McpTargetDisplay*) fgInstance : new McpTargetDisplay();
 }
 
-void TargetDisplay::startEventDisplay()
+void McpTargetDisplay::startEventDisplay()
 { 
   //Read junk event
-  fTheTarget.readEvent();
+  fTheMcpTarget.readEvent();
   this->displayNextEvent();   
 }
 
 
 
-void TargetDisplay::refreshEventDisplay()
+void McpTargetDisplay::refreshEventDisplay()
 {
-   if(!fTargetCanvas) {
-      fTargetCanvas = new TCanvas("canTarget","canTarget",1200,800);
-      fTargetCanvas->cd();
+   if(!fMcpTargetCanvas) {
+      fMcpTargetCanvas = new TCanvas("canMcpTarget","canMcpTarget",1200,800);
+      fMcpTargetCanvas->cd();
       drawEventButtons();
    }
-   if(!fTargetMainPad) {
-      fTargetCanvas->cd();
-      fTargetMainPad= new TPad("canTargetMain","canTargetMain",0,0,1,0.9);
-      fTargetMainPad->Draw();
-      fTargetCanvas->Update();
+   if(!fMcpTargetMainPad) {
+      fMcpTargetCanvas->cd();
+      fMcpTargetMainPad= new TPad("canMcpTargetMain","canMcpTargetMain",0,0,1,0.9);
+      fMcpTargetMainPad->Draw();
+      fMcpTargetCanvas->Update();
    }
-   if(!fTargetEventInfoPad) {
-      fTargetCanvas->cd();
-      fTargetEventInfoPad= new TPad("canTargetEventInfo","canTargetEventInfo",0.2,0.91,0.8,0.99);
-      fTargetEventInfoPad->Draw();
-      fTargetCanvas->Update();
+   if(!fMcpTargetEventInfoPad) {
+      fMcpTargetCanvas->cd();
+      fMcpTargetEventInfoPad= new TPad("canMcpTargetEventInfo","canMcpTargetEventInfo",0.2,0.91,0.8,0.99);
+      fMcpTargetEventInfoPad->Draw();
+      fMcpTargetCanvas->Update();
    } 
 
    static TGraph *gr[NUM_CHANNELS]={0};
@@ -92,8 +92,8 @@ void TargetDisplay::refreshEventDisplay()
    static TGraph *fft[NUM_CHANNELS]={0};
 
    //For now lets be lazy
-   fTargetMainPad->Clear();
-   fTargetMainPad->Divide(4,4);
+   fMcpTargetMainPad->Clear();
+   fMcpTargetMainPad->Divide(4,4);
    Double_t maxVal=0;
    char graphName[180];
    for(int chan=0;chan<16;chan++) {
@@ -101,7 +101,7 @@ void TargetDisplay::refreshEventDisplay()
      if(gr[chan]) delete gr[chan];
      if(wv[chan]) delete wv[chan];
      if(fft[chan]) delete fft[chan];
-     gr[chan] = fTheTarget.getChannel(chan);
+     gr[chan] = fTheMcpTarget.getChannel(chan);
      wv[chan] = new WaveformGraph(gr[chan]);
      wv[chan]->setChannel(chan);
      wv[chan]->SetLineColor(9);
@@ -116,7 +116,7 @@ void TargetDisplay::refreshEventDisplay()
    }
    maxVal=TMath::Sqrt(maxVal);
    for(int chan=0;chan<16;chan++) {
-     fTargetMainPad->cd(chan+1);
+     fMcpTargetMainPad->cd(chan+1);
      wv[chan]->SetMaximum(maxVal*1.2);
      wv[chan]->SetMinimum(-1.2*maxVal);
      if(fView==1) 
@@ -126,12 +126,12 @@ void TargetDisplay::refreshEventDisplay()
    }
 
   
-  fTargetCanvas->Update();
+  fMcpTargetCanvas->Update();
 }
 
-int TargetDisplay::displayNextEvent()
+int McpTargetDisplay::displayNextEvent()
 {  
-  Int_t gotEvent=fTheTarget.readEvent();
+  Int_t gotEvent=fTheMcpTarget.readEvent();
   if(gotEvent==1)
     refreshEventDisplay(); 
   else {
@@ -143,29 +143,29 @@ int TargetDisplay::displayNextEvent()
 
 
 
-void TargetDisplay::drawEventButtons() {
-   TButton *butNext = new TButton("Next ","TargetDisplay::Instance()->displayNextEvent();",0.95,0.975,1,1);
+void McpTargetDisplay::drawEventButtons() {
+   TButton *butNext = new TButton("Next ","McpTargetDisplay::Instance()->displayNextEvent();",0.95,0.975,1,1);
    butNext->SetTextSize(0.5);
    butNext->SetFillColor(kGreen-10);
    butNext->Draw();
    
 
-   TButton *butPlay = new TButton("Play","TargetDisplay::Instance()->startEventPlaying();",0.9,0.95,0.95,1);
+   TButton *butPlay = new TButton("Play","McpTargetDisplay::Instance()->startEventPlaying();",0.9,0.95,0.95,1);
    butPlay->SetTextSize(0.5);
    butPlay->SetFillColor(kGreen-10);
    butPlay->Draw();
-   TButton *butStop = new TButton("Stop","TargetDisplay::Instance()->stopEventPlaying();",0.90,0.90,0.95,0.94);
+   TButton *butStop = new TButton("Stop","McpTargetDisplay::Instance()->stopEventPlaying();",0.90,0.90,0.95,0.94);
    butStop->SetTextSize(0.5);
    butStop->SetFillColor(kRed-10);
    butStop->Draw();
 
 
    //NEW BUTTONS
-   fWaveformButton = new TButton("Waveform View","TargetDisplay::Instance()->toggleView(1); TargetDisplay::Instance()->refreshEventDisplay();",0.05,0.95,0.14,1);
+   fWaveformButton = new TButton("Waveform View","McpTargetDisplay::Instance()->toggleView(1); McpTargetDisplay::Instance()->refreshEventDisplay();",0.05,0.95,0.14,1);
    fWaveformButton->SetTextSize(0.4);
    fWaveformButton->SetFillColor(kGray+3);
    fWaveformButton->Draw();
-   fPowerButton = new TButton("FFT View","TargetDisplay::Instance()->toggleView(2); TargetDisplay::Instance()->refreshEventDisplay();",0.05,0.9,0.14,0.95);
+   fPowerButton = new TButton("FFT View","McpTargetDisplay::Instance()->toggleView(2); McpTargetDisplay::Instance()->refreshEventDisplay();",0.05,0.9,0.14,0.95);
    fPowerButton->SetTextSize(0.4);
    fPowerButton->SetFillColor(kGray);
    fPowerButton->Draw();
@@ -174,7 +174,7 @@ void TargetDisplay::drawEventButtons() {
 
 
 
-void TargetDisplay::startEventPlaying()
+void McpTargetDisplay::startEventPlaying()
 {
 
   fInEventPlayMode=1;
@@ -190,7 +190,7 @@ void TargetDisplay::startEventPlaying()
 
 
 
-void TargetDisplay::stopEventPlaying() 
+void McpTargetDisplay::stopEventPlaying() 
 {
   fInEventPlayMode=0;
 }
