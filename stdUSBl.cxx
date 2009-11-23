@@ -180,8 +180,20 @@ bool stdUSB::readData(unsigned short * pData, int l, int* lread)// throw(...)
         *lread = (int)(retval / (unsigned long)sizeof(unsigned short));
         //*lread *= 4;
         return SUCCEED;
-    } else
-        printf("error code: %s\n", strerror(-1 * retval));
-    *lread = retval;
-    return FAILED;
+    } else {
+      if(retval==-110) { 
+	//Think this is a timeout
+	usleep(1000);
+	retval = usb_bulk_read(stdHandle, USBFX2_EP_READ, (char*)pData, buff_sz, USB_TOUT_MS);
+	if(retval>0) {
+	  *lread = (int)(retval / (unsigned long)sizeof(unsigned short));
+	  return SUCCEED;
+	}
+      }
+      else {           
+	printf("error code: %d %s\n", strerror(-1 * retval));	  
+	*lread = retval;
+      }
+      return FAILED;
+    }
 }
