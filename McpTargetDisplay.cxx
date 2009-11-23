@@ -44,6 +44,7 @@ McpTargetDisplay::McpTargetDisplay()
   fTheOfflineTree=0;
   fTheTargetDataPtr=0;
   fOfflineMode=0;
+  fOutputMode=0;
   fTheOfflineEntry=0;
   
 }
@@ -51,6 +52,8 @@ McpTargetDisplay::McpTargetDisplay()
 McpTargetDisplay::~McpTargetDisplay()
 {
    //Default destructor
+  if(fOutputMode && fTheOfflineTree)
+    fTheOfflineTree->AutoSave();
 }
 
 
@@ -64,9 +67,18 @@ McpTargetDisplay*  McpTargetDisplay::Instance()
    return (fgInstance) ? (McpTargetDisplay*) fgInstance : new McpTargetDisplay();
 }
 
+void McpTargetDisplay::openOutputFile(char fileName[180])
+{
+  fOutputMode=1;
+  fTheOfflineFile = new TFile(fileName,"Target Output File");
+  fTheOfflineTree = new TTree("mcpTree","Target Output Tree");
+  fTheOfflineTree->Branch("target","TargetData",&fTheTargetDataPtr);
+}
+
+
 void McpTargetDisplay::setOfflineMode(TFile *inputFile)
 {
-  fOfflineMode=0;
+  fOfflineMode=1;
   fTheOfflineFile = inputFile;
   if(!fTheOfflineFile) {
     std::cerr << "No input file -- giving up\n";
@@ -90,10 +102,6 @@ void McpTargetDisplay::startEventDisplay()
     fTheTargetDataPtr=fTheMcpTarget.getTargetData(); //Do not delete
   }
   else {
-    if(fTheOfflineEntry<fTheOfflineTree->GetEntries()) {
-      fTheOfflineTree->GetEntry(fTheOfflineEntry);
-      fTheOfflineEntry++;
-    }
   }
   this->displayNextEvent();   
 }
@@ -168,6 +176,8 @@ int McpTargetDisplay::displayNextEvent()
   if(!fOfflineMode) {
     gotEvent=fTheMcpTarget.readEvent();
     fTheTargetDataPtr=fTheMcpTarget.getTargetData(); //Do not delete
+    if(fOutputMode) 
+      fTheOfflineTree->Fill();
   }
   else {
     if(fTheOfflineEntry<fTheOfflineTree->GetEntries()) {
