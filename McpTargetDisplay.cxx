@@ -39,6 +39,12 @@ McpTargetDisplay::McpTargetDisplay()
   fMcpTargetEventInfoPad=0;
   fMcpTargetMainPad=0;
   fView=1;
+
+  fTheOfflineFile=0;
+  fTheOfflineTree=0;
+  fTheTargetDataPtr=0;
+  fOfflineMode=0;
+  fTheOfflineEntry=0;
   
 }
 
@@ -58,10 +64,37 @@ McpTargetDisplay*  McpTargetDisplay::Instance()
    return (fgInstance) ? (McpTargetDisplay*) fgInstance : new McpTargetDisplay();
 }
 
+void McpTargetDisplay::setOfflineMode(TFile *inputFile)
+{
+  fOfflineMode=0;
+  fTheOfflineFile = inputFile;
+  if(!fTheOfflineFile) {
+    std::cerr << "No input file -- giving up\n";
+    exit(0);
+  }
+  fTheOfflineTree = (TTree*) fTheOfflineFile->Get("mcpTree");
+  if(!fTheOfflineTree) {
+    std::cerr << "No input tree -- giving up\n";
+    exit(0);
+  }
+  fTheOfflineTree->SetBranchAddress("target",&fTheTargetDataPtr);
+    
+
+}
+
 void McpTargetDisplay::startEventDisplay()
 { 
   //Read junk event
-  fTheMcpTarget.readEvent();
+  if(!fOfflineMode) {
+    fTheMcpTarget.readEvent();
+    fTheTargetDataPtr=fTheMcpTarget.getTargetData(); //Do not delete
+  }
+  else {
+    if(fTheOfflineEntry<fTheOfflineTree->GetEntries()) {
+      fTheOfflineTree->GetEntry(fTheOfflineEntry);
+      fTheOfflineEntry++;
+    }
+  }
   this->displayNextEvent();   
 }
 
@@ -101,7 +134,7 @@ void McpTargetDisplay::refreshEventDisplay()
      if(gr[chan]) delete gr[chan];
      if(wv[chan]) delete wv[chan];
      if(fft[chan]) delete fft[chan];
-     gr[chan] = fTheMcpTarget.getChannel(chan);
+     gr[chan] = fTheTargetDataPtr->getChannel(chan);
      wv[chan] = new WaveformGraph(gr[chan]);
      wv[chan]->setChannel(chan);
      wv[chan]->SetLineColor(9);
@@ -131,7 +164,18 @@ void McpTargetDisplay::refreshEventDisplay()
 
 int McpTargetDisplay::displayNextEvent()
 {  
-  Int_t gotEvent=fTheMcpTarget.readEvent();
+  Int_t gotEvent=0;
+  if(!fOfflineMode) {
+    gotEvent=fTheMcpTarget.readEvent();
+    fTheTargetDataPtr=fTheMcpTarget.getTargetData(); //Do not delete
+  }
+  else {
+    if(fTheOfflineEntry<fTheOfflineTree->GetEntries()) {
+      fTheOfflineTree->GetEntry(fTheOfflineEntry);
+      fTheOfflineEntry++;
+      gotEvent=1;
+    }    
+  }
   if(gotEvent==1)
     refreshEventDisplay(); 
   else {

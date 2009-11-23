@@ -27,7 +27,7 @@ McpTarget::McpTarget()
   }
   loadDnlLookUpTable();
   loadPedestal();
-
+  fTargetDataPtr=0;
 
   useSyncUsb(1);
   setTermValue(0,1,0);
@@ -88,8 +88,7 @@ void McpTarget::generatePedestals()
   Int_t row,col;
   TFile *fpTemp = new TFile("pedFile.root","RECREATE");
   TTree *pedTree = new TTree("pedTree","Tree of pedestal thingies");    
-  TargetData *targetPtr=0;
-  pedTree->Branch("target","TargetData",&targetPtr);
+  pedTree->Branch("target","TargetData",&fTargetDataPtr);
   pedTree->Branch("values",&fReadoutBuffer[0],"values[4140]/s");
 
   for(row=0;row<NUM_ROWS;row++) {
@@ -105,7 +104,7 @@ void McpTarget::generatePedestals()
 	if(retVal<0) continue;
 	//Now unpack the data into a more useful structure
 	TargetData targetData(this->fReadoutBuffer);
-	targetPtr=&targetData;
+	fTargetDataPtr=&targetData;
 	pedTree->Fill();	
 	countStuff[row][col]++;
 	for(int chip=0;chip<NUM_TARGETS;chip++) {
@@ -169,19 +168,23 @@ int McpTarget::readEvent()
     return -1;
   }
   
+  if(fTargetDataPtr)
+    delete fTargetDataPtr;
+  fTargetDataPtr = new TargetData(fReadoutBuffer);
   
-  TargetData targetData(fReadoutBuffer);
   
   for(int chip=0;chip<NUM_TARGETS;chip++) {
     for(int chan=0;chan<NUM_CHANNELS;chan++) {
       for(int samp=0;samp<SAMPLES_PER_COL;samp++) {
-	Double_t value = fDnlLUT[targetData.DATA[chip][chan][samp]];
+	Double_t value = fDnlLUT[fTargetDataPtr->DATA[chip][chan][samp]];
 	//DNL_LUT.txt
-	value-=fPedestalValues[chip][chan][targetData.ROW_LOC[chip]][targetData.COL_LOC[chip]][samp];
+	value-=fPedestalValues[chip][chan][fTargetDataPtr->ROW_LOC[chip]][fTargetDataPtr->COL_LOC[chip]][samp];
 	fVoltBuffer[chip][chan][samp]=value;
       }
     }
   }
+  memcpy(fTargetDataPtr->fVoltBuffer,fVoltBuffer,sizeof(Float_t)*NUM_TARGETS*NUM_CHANNELS*SAMPLES_PER_COL);
+  
   //  std::cout << "fPedSubbedBuffer[0][0] " << fPedSubbedBuffer[0][0] << "\n";
 
   fEventNumber++;

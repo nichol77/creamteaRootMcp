@@ -10,6 +10,7 @@
 
 //rootTarget includes
 #include "Defs.h"
+#include "TargetData.h"
 
 
 
@@ -47,11 +48,12 @@ class McpTarget
   }
   TGraph *getChannel(Int_t chip, Int_t channel);
 
+  TargetData *getTargetData() {return fTargetDataPtr;}
 
  private:
   Int_t fDumpRawHexData; ///< Whether or not to dump out the raw hex data 
   Int_t fTermMode; ///< 100, 1k, 10k 
-  Int_t fSampMode; ///< Unclear
+  Int_t fSampMode; ///< Unclearxs
   Int_t fExtTrigMode; ///< On or off
   Int_t fEventNumber; ///< Software event number
   Int_t fTargetEventNumber; ///< Event counter from Target??
@@ -63,6 +65,7 @@ class McpTarget
   Float_t fPedestalValues[NUM_TARGETS][NUM_CHANNELS][NUM_ROWS][NUM_COLS][SAMPLES_PER_COL];
   Float_t fVoltBuffer[NUM_TARGETS][NUM_CHANNELS][SAMPLES_PER_COL];
   Float_t fDNLLookUpTable[4096];
+  TargetData *fTargetDataPtr;
 
 };
 

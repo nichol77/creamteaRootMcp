@@ -8,6 +8,7 @@
 #define NUM_COLS              32       // Columns per row
 #define SAMPLES_PER_COL       64       //Amount of values per signal
 #define SAMPLES_PER_ROW       NUM_COLS*NUM_ROWS
+#define NUM_SAMPLES SAMPLES_PER_COL
 #define DATASIZE       NUM_CHANNELS * NUM_SAMPLES
 #define BUFFERSIZE    4140  //Size of buffer, need 5 more values due to headers and stuff.
 

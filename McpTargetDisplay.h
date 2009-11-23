@@ -15,6 +15,7 @@
 //#include "McpTargetDisplayConventions.h"
 
 #include "McpTarget.h" //The interface class
+#include "TargetData.h" //The data class
 
 class TCanvas;
 class TPad;
@@ -38,6 +39,7 @@ class McpTargetDisplay
   void stopEventPlaying();
 
   //Waveform event display stuff
+  void setOfflineMode(TFile *inputFile);
   void startEventDisplay(); //these are 
   int displayNextEvent(); // all the
   void refreshEventDisplay(); // same
@@ -66,6 +68,11 @@ class McpTargetDisplay
    Int_t fView; //1 is waveforms, 2 is FFTs
 
    McpTarget fTheMcpTarget;
+   TargetData *fTheTargetDataPtr;
+   TFile *fTheOfflineFile;
+   TTree *fTheOfflineTree;
+   Int_t fOfflineMode;
+   Long64_t fTheOfflineEntry;
 };
 
 
