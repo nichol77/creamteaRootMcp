@@ -39,8 +39,8 @@ GLIBS         = $(ROOTGLIBS) $(SYSLIBS)
 
 #Now the bits we're actually compiling
 ROOT_LIBRARY = libMcpTargetRoot.${DLLSUF}
-LIB_OBJS =  McpTarget.o McpTargetDisplay.o WaveformGraph.o FFTGraph.o stdUSBl.o TargetDisplay.o targetDict.o
-CLASS_HEADERS = McpTarget.h McpTargetDisplay.h WaveformGraph.h FFTGraph.h TargetDisplay.h
+LIB_OBJS =  McpTarget.o McpTargetDisplay.o WaveformGraph.o FFTGraph.o stdUSBl.o TargetData.o targetDict.o
+CLASS_HEADERS = McpTarget.h McpTargetDisplay.h WaveformGraph.h FFTGraph.h TargetData.h
 
 
 all : $(ROOT_LIBRARY)
