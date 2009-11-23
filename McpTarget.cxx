@@ -78,7 +78,6 @@ Int_t McpTarget::justReadBuffer()
 
 void McpTarget::generatePedestals() 
 {
-  int bytesRead;
   Double_t tempValues[NUM_TARGETS][NUM_CHANNELS][NUM_ROWS][NUM_COLS][SAMPLES_PER_COL]={{{{{0}}}}};
   Int_t countStuff[NUM_ROWS][NUM_COLS]={{0}};
   
@@ -141,7 +140,6 @@ int McpTarget::readEvent()
 {
   //Read data from USB class (stdUSB.cpp) since we dont have the device yet 
   //then we are going to read data from test data file 	
-  int bytesRead;
   static int counter=0;	
     
 
