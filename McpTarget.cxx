@@ -340,3 +340,24 @@ void McpTarget::loadDnlLookUpTable()
 //   rowLoc = rowLoc >> 9;
 
 // }
+
+
+void McpTarget::rawSendInt(unsigned int value)
+{
+  bool retVal=fTheUsb.sendData(value);
+  std::cout << "Got " << retVal << " for sending " << value << "\n";
+}
+
+
+void McpTarget::rawReadInts(int numInts, unsigned short buffer[])
+{
+  int numRead=0;
+  int retVal=fTheUsb.readData(buffer,numInts,&numRead);
+  std::cout << "Got " << retVal << " for reading " << numRead 
+	    << " of " << numInts << " values " << "\n";
+  if(numRead>0) {
+    for(int i=0;i<numRead;i++) {
+      std::cout << i << "\t" << buffer[i] << "\n";
+    }
+  }
+}
