@@ -10,7 +10,7 @@ void runTargetDisplay() {
   gSystem->Load("libMathMore.so");
   gSystem->Load("libPhysics.so");  
   gSystem->Load("libRootFftwWrapper.so");   
-  gSystem->Load("libTargetRoot.so");
+  gSystem->Load("libMcpTargetRoot.so");
 
 //   TChain *fred=0; //Will this work?
 //   Target *myTarget = new Target();
