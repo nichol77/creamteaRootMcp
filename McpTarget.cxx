@@ -94,6 +94,7 @@ void McpTarget::generatePedestals()
       
       for(int event=0;event<fNumPedEvents;event++) {
 	//Send software trigger
+	std::cerr << "*";
 	sendSoftTrig();
 	usleep(1000);
 	Int_t retVal=justReadBuffer();
@@ -112,6 +113,7 @@ void McpTarget::generatePedestals()
 	  }
 	}
       }
+	std::cerr << "\n";
     }
     std::cout << "Read " << fNumPedEvents << " events from " << row << "\n";
   }
