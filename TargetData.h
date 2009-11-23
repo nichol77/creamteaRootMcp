@@ -7,7 +7,7 @@ class TargetData
 {
  public:
   TargetData();
-  TargetData(unsigned short rawData[BUFFERSIZE])
+  TargetData(unsigned short rawData[BUFFERSIZE]);
   ~TargetData();  
   void unpackData();
 

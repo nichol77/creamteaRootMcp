@@ -28,7 +28,6 @@ class McpTarget
   void setExtTrigMode(Int_t mode);
   void useSyncUsb(Int_t flag);
   void sendSoftTrig();
-  void useEventCounter(Int_t flag);
   void setPedRowCol(Int_t row, Int_t col);
   void enablePedestal(Int_t flag);
   void setWbias(UInt_t value);
@@ -38,7 +37,12 @@ class McpTarget
   //  void getMemAddress(UInt_t memAddrSpace, UInt_t &rowLoc, UInt_t &colLoc,
   //		     UInt_t &pixLoc);
 
-  TGraph *getChannel(Int_t channel);
+  TGraph *getChannel(Int_t chanInd) 
+  { 
+    return getChannel(chanInd/NUM_CHANNELS,
+		      chanInd%NUM_CHANNELS);
+  }
+  TGraph *getChannel(Int_t chip, Int_t channel);
 
 
  private:
@@ -52,7 +56,7 @@ class McpTarget
   UShort_t fBuffer[BUFFERSIZE]; ///< Arbitrarily sized buffer
   UShort_t fReadoutBuffer[BUFFERSIZE+2]; ///<Arbitrarily sized bigger buffer
   Int_t fPedSubbedBuffer[NUM_TARGETS][NUM_CHANNELS][SAMPLES_PER_COL]; ///<Again who knows or dares to dream
-  Float fDnlLUT[4096]; ///< No idea what this is, or why it is 4096
+  Float_t fDnlLUT[4096]; ///< No idea what this is, or why it is 4096
   Float_t fPedestalValues[NUM_TARGETS][NUM_CHANNELS][NUM_ROWS][NUM_COLS][SAMPLES_PER_COL];
   Float_t fVoltBuffer[NUM_TARGETS][NUM_CHANNELS][SAMPLES_PER_COL];
   Float_t fDNLLookUpTable[4096];

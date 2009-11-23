@@ -19,12 +19,13 @@ McpTarget::McpTarget()
       for(int row=0;row<NUM_ROWS;row++) {
 	for(int col=0;col<NUM_COLS;col++) {
 	  for(int samp=0;samp<SAMPLES_PER_COL;samp++) {
-	    fPedestalValues[chan][row][col][samp]=2000;
+	    fPedestalValues[chip][chan][row][col][samp]=2000;
 	  }
 	}
       }
     }
   }
+  loadDnlLookUpTable();
   loadPedestal();
 
   if (fTheUsb.createHandles() != stdUSB::SUCCEED) {
@@ -61,7 +62,7 @@ Int_t McpTarget::justReadBuffer()
   if(fDumpRawHexData) {
     ofstream HexDump("eventHexDump.txt");
     for(int i=0;i<BUFFERSIZE;i++) {
-      HexDump << dec << i << "\t" << hex << "\t" << fReadoutBuffer[i] << "\n";
+      HexDump << std::dec << i << "\t" << std::hex << "\t" << fReadoutBuffer[i] << "\n";
     }
   }
 
@@ -105,11 +106,11 @@ void McpTarget::generatePedestals()
 	TargetData targetData(this->fReadoutBuffer);
 	targetPtr=&targetData;
 	pedTree->Fill();	
-	countStuff[row][loc]++;
+	countStuff[row][col]++;
 	for(int chip=0;chip<NUM_TARGETS;chip++) {
 	  for(int chan=0;chan<NUM_CHANNELS;chan++) {
 	    for(int samp=0;samp<SAMPLES_PER_COL;samp++) {
-	      Float_t value=(Float_t)targetData.DATA[chip][chan][sample];
+	      Float_t value=(Float_t)targetData.DATA[chip][chan][samp];
 	      tempValues[chip][chan][row][col][samp]=value;
 	    }
 	  }
@@ -177,7 +178,7 @@ int McpTarget::readEvent()
       for(int samp=0;samp<SAMPLES_PER_COL;samp++) {
 	Double_t value = fDnlLUT[targetData.DATA[chip][chan][samp]];
 	//DNL_LUT.txt
-	value-=fPedestalValues[chip][chan][targetData.ROW_LOC[chip]][targetData.COL_LOC[i]][samp];
+	value-=fPedestalValues[chip][chan][targetData.ROW_LOC[chip]][targetData.COL_LOC[chip]][samp];
 	fVoltBuffer[chip][chan][samp]=value;
       }
     }
@@ -185,8 +186,7 @@ int McpTarget::readEvent()
   //  std::cout << "fPedSubbedBuffer[0][0] " << fPedSubbedBuffer[0][0] << "\n";
 
   fEventNumber++;
-  fMcpTargetEventNumber=tmpBuffer[1];
-  
+   
   return 1;
 }
 
@@ -212,15 +212,16 @@ int McpTarget::readEvent()
 
 // }
 
-TGraph *McpTarget::getChannel(int channel)
+TGraph *McpTarget::getChannel(int chip, int channel)
 {
+  if(chip<0 || chip>=NUM_TARGETS) return NULL;
   if(channel<0 || channel>=NUM_CHANNELS) return NULL;
   
   Double_t timeVals[SAMPLES_PER_COL]={0};
   Double_t voltVals[SAMPLES_PER_COL]={0};
   for(int i=0;i<SAMPLES_PER_COL;i++) {
      timeVals[i]=Double_t(i); //Should multiple by delta t here
-    voltVals[i]=fVoltBuffer[channel][i];
+     voltVals[i]=fVoltBuffer[chip][channel][i];
   }
   TGraph *gr = new TGraph(SAMPLES_PER_COL,timeVals,voltVals);
   return gr;
@@ -321,22 +322,13 @@ void McpTarget:: sendSoftTrig()
   fTheUsb.sendData(SOFT_TRIG_MASK);
 }
 
-void McpTarget:: useEventCounter(Int_t flag)
-{
-  if(flag==1) {
-    fTheUsb.sendData(ENABLE_EVENT_COUNTER_MASK);
-  }
-  else {
-    fTheUsb.sendData(DISABLE_EVENT_COUNTER_MASK);
-  }
-}
 
 void McpTarget::loadDnlLookUpTable()
 {
   std::ifstream DNL("DNL_LUT.txt");
   int sampVal;
   double lutVal;
-  for(i=0;i<4096;i++) {
+  for(int i=0;i<4096;i++) {
     DNL >> sampVal >> lutVal;
     fDnlLUT[sampVal]=lutVal;
   }

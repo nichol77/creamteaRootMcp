@@ -87,16 +87,16 @@ void McpTargetDisplay::refreshEventDisplay()
       fMcpTargetCanvas->Update();
    } 
 
-   static TGraph *gr[NUM_CHANNELS]={0};
-   static WaveformGraph *wv[NUM_CHANNELS]={0};
-   static TGraph *fft[NUM_CHANNELS]={0};
+   static TGraph *gr[NUM_TOTAL_CHANNELS]={0};
+   static WaveformGraph *wv[NUM_TOTAL_CHANNELS]={0};
+   static TGraph *fft[NUM_TOTAL_CHANNELS]={0};
 
    //For now lets be lazy
    fMcpTargetMainPad->Clear();
-   fMcpTargetMainPad->Divide(4,4);
+   fMcpTargetMainPad->Divide(8,8);
    Double_t maxVal=0;
    char graphName[180];
-   for(int chan=0;chan<16;chan++) {
+   for(int chan=0;chan<NUM_TOTAL_CHANNELS;chan++) {
      sprintf(graphName,"Channel %d",chan+1);
      if(gr[chan]) delete gr[chan];
      if(wv[chan]) delete wv[chan];
@@ -115,7 +115,7 @@ void McpTargetDisplay::refreshEventDisplay()
      
    }
    maxVal=TMath::Sqrt(maxVal);
-   for(int chan=0;chan<16;chan++) {
+   for(int chan=0;chan<NUM_TOTAL_CHANNELS;chan++) {
      fMcpTargetMainPad->cd(chan+1);
      wv[chan]->SetMaximum(maxVal*1.2);
      wv[chan]->SetMinimum(-1.2*maxVal);
