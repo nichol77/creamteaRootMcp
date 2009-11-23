@@ -1,4 +1,4 @@
-  #include "TargetData.h"
+ #include "TargetData.h"
 
 /////////////////////////////////////////////////////////
 TargetData::TargetData(void)
@@ -7,14 +7,15 @@ TargetData::TargetData(void)
 TargetData::~TargetData(void)
 {}
 /////////////////////////////////////////////////////////
-TargetData::TargetData(unsigned short rawData[]){
+TargetData::TargetData(unsigned short rawData[])
+{
   for(int i=0;i<BUFFERSIZE;i++)
     RAW[i]=rawData[i];
   unpackData();
 }
 
 /////////////////////////////////////////////////////////
-void unpackData();
+void TargetData::unpackData()
 {  
   unsigned int RAW_TEMP[4];
   unsigned int RAW_ROVDD[4];
