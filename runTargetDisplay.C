@@ -13,9 +13,9 @@ void runTargetDisplay() {
   gSystem->Load("libMcpTargetRoot.so");
 
 //   TChain *fred=0; //Will this work?
-//   Target *myTarget = new Target();
-//   myTarget->generatePedestals();
-//   exit(0);
+   McpTarget *myTarget = new McpTarget();
+   myTarget->generatePedestals();
+   exit(0);
 
   McpTargetDisplay *targetPtr = new McpTargetDisplay();
   targetPtr->startEventDisplay();

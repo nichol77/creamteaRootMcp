@@ -33,7 +33,7 @@ McpTarget::McpTarget()
     exit(0);
   }
 
-  useSyncUsb(0);
+  useSyncUsb(1);
   setTermValue(0,1,0);
   enablePedestal(false);
   setPedRowCol(0,0);
