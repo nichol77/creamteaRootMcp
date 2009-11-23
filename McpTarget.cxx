@@ -28,10 +28,6 @@ McpTarget::McpTarget()
   loadDnlLookUpTable();
   loadPedestal();
 
-  if (fTheUsb.createHandles() != stdUSB::SUCCEED) {
-    std::cerr << "USB failed to initalize.\n";
-    exit(0);
-  }
 
   useSyncUsb(1);
   setTermValue(0,1,0);
@@ -45,7 +41,6 @@ McpTarget::McpTarget()
 
 McpTarget::~McpTarget()
 {
-  fTheUsb.freeHandles();
 }
 
 Int_t McpTarget::justReadBuffer()
@@ -57,7 +52,12 @@ Int_t McpTarget::justReadBuffer()
   memset(fReadoutBuffer,0,BUFFERSIZE*sizeof(unsigned short));
 
   int bytesRead=0;
+  if (fTheUsb.createHandles() != stdUSB::SUCCEED) {
+    std::cerr << "USB failed to initalize.\n";
+    exit(0);
+  }
   fTheUsb.readData(fReadoutBuffer, BUFFERSIZE, &bytesRead);
+  fTheUsb.freeHandles();
 
   if(fDumpRawHexData) {
     ofstream HexDump("eventHexDump.txt");
@@ -188,10 +188,23 @@ int McpTarget::readEvent()
 //   if(fExtTrigMode==mode) return;
 //   fExtTrigMode=mode;
 //   if(fExtTrigMode) {
+
+//  if (fTheUsb.createHandles() != stdUSB::SUCCEED) {
+//    std::cerr << "USB failed to initalize.\n";
+//    exit(0);
+//  }
 //     fTheUsb.sendData(0x10001);
+// fTheUsb.freeHandles();
 //   }
 //   else {
+
+//  if (fTheUsb.createHandles() != stdUSB::SUCCEED) {
+//    std::cerr << "USB failed to initalize.\n";
+//    exit(0);
+//  }
 //     fTheUsb.sendData(0x00001);
+
+//  fTheUsb.freeHandles();
 //     // do some dummy readouts before we continue
 //     unsigned short int tmpData[5];
 //     int read;
@@ -249,17 +262,28 @@ void McpTarget::setPedRowCol(Int_t row, Int_t col)
   dataVal = PED_ROW_COL_MASK;
   dataVal |= (row << PED_ROW_SHIFT);
   dataVal |= (col << PED_COL_SHIFT);
+  if (fTheUsb.createHandles() != stdUSB::SUCCEED) {
+    std::cerr << "USB failed to initalize.\n";
+    exit(0);
+  }
   fTheUsb.sendData(dataVal); 
+  fTheUsb.freeHandles();
 }
 
 void McpTarget::enablePedestal(Int_t flag)
 {
+
+  if (fTheUsb.createHandles() != stdUSB::SUCCEED) {
+    std::cerr << "USB failed to initalize.\n";
+    exit(0);
+  }
   if(flag==1) {
     fTheUsb.sendData(ENABLE_PED_MASK);
   }
   else {
     fTheUsb.sendData(DISABLE_PED_MASK);
   }
+  fTheUsb.freeHandles();
 }
 
 
@@ -267,7 +291,12 @@ void McpTarget::setWbias(UInt_t value)
 {
   UInt_t dataVal = WBIAS_MASK;
   dataVal |= (value << WBIAS_SHIFT);
+  if (fTheUsb.createHandles() != stdUSB::SUCCEED) {
+    std::cerr << "USB failed to initalize.\n";
+    exit(0);
+  }
   fTheUsb.sendData(dataVal);
+  fTheUsb.freeHandles();
 }
 
 
@@ -275,7 +304,12 @@ void McpTarget::setTrigThresh(UInt_t value)
 {
   UInt_t dataVal=TRIG_THRESH_MASK;
   dataVal |= (value&0xffff) << TRIG_THRESH_SHIFT;
+  if (fTheUsb.createHandles() != stdUSB::SUCCEED) {
+    std::cerr << "USB failed to initalize.\n";
+    exit(0);
+  }
   fTheUsb.sendData(dataVal);
+  fTheUsb.freeHandles();
 }
 
 void McpTarget::setTermValue(Int_t f100, Int_t f1k, Int_t f10k) 
@@ -284,34 +318,57 @@ void McpTarget::setTermValue(Int_t f100, Int_t f1k, Int_t f10k)
   dataVal |= (f100&0x1) << TERM_100_OHMS_SHIFT;
   dataVal |= (f1k&0x1) << TERM_1K_OHMS_SHIFT;
   dataVal |= (f10k&0x1) << TERM_10K_OHMS_SHIFT;
+
+  if (fTheUsb.createHandles() != stdUSB::SUCCEED) {
+    std::cerr << "USB failed to initalize.\n";
+    exit(0);
+  }
   fTheUsb.sendData(dataVal);
+  fTheUsb.freeHandles();
 
 }
 
 
 void McpTarget::setTrigPolarity(Int_t flag)
 {
+
+  if (fTheUsb.createHandles() != stdUSB::SUCCEED) {
+    std::cerr << "USB failed to initalize.\n";
+    exit(0);
+  }
   if(flag==1) {
     fTheUsb.sendData(TRIG_POLARITY_NEG);
   }
   else {
     fTheUsb.sendData(TRIG_POLARITY_POS);
   }
+  fTheUsb.freeHandles();
 }
 
 
 void McpTarget:: useSyncUsb(Int_t flag)
 {
+
+  if (fTheUsb.createHandles() != stdUSB::SUCCEED) {
+    std::cerr << "USB failed to initalize.\n";
+    exit(0);
+  }
   if(flag==1) {
     fTheUsb.sendData(ENABLE_SYNC_USB_MASK);
   }
   else {
     fTheUsb.sendData(DISABLE_SYNC_USB_MASK);
   }
+  fTheUsb.freeHandles();
 }
 
 void McpTarget:: sendSoftTrig()
 {
+
+  if (fTheUsb.createHandles() != stdUSB::SUCCEED) {
+    std::cerr << "USB failed to initalize.\n";
+    exit(0);
+  }
   fTheUsb.sendData(SOFT_TRIG_MASK);
 }
 
@@ -345,13 +402,24 @@ void McpTarget::loadDnlLookUpTable()
 
 void McpTarget::rawSendInt(unsigned int value)
 {
+
+  if (fTheUsb.createHandles() != stdUSB::SUCCEED) {
+    std::cerr << "USB failed to initalize.\n";
+    exit(0);
+  }
   bool retVal=fTheUsb.sendData(value);
+  fTheUsb.freeHandles();
   std::cout << "Got " << retVal << " for sending " << value << "\n";
 }
 
 
 void McpTarget::rawReadInts(int numInts, unsigned short buffer[])
 {
+
+  if (fTheUsb.createHandles() != stdUSB::SUCCEED) {
+    std::cerr << "USB failed to initalize.\n";
+    exit(0);
+  }
   int numRead=0;
   int retVal=fTheUsb.readData(buffer,numInts,&numRead);
   std::cout << "Got " << retVal << " for reading " << numRead 
@@ -361,4 +429,5 @@ void McpTarget::rawReadInts(int numInts, unsigned short buffer[])
       std::cout << i << "\t" << buffer[i] << "\n";
     }
   }
+  fTheUsb.freeHandles();
 }
