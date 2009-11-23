@@ -45,7 +45,7 @@ class TargetData: public TObject
  private:
   void GetMEM_ADDR(unsigned int MEM_ADDR_SPACE, unsigned int &ROW_LOC, unsigned int &COL_LOC, unsigned int &PIX_LOC, unsigned int &HIT_BIT);
   void GetFEEDBACK(unsigned int FEEDBACK, unsigned int &SGN, unsigned int &PED_ROW_ADDR, unsigned int &PED_COL_ADDR, unsigned int &TERM, unsigned int &EN_PED);
-
+ClassDef(TargetData,1);
 };
 
 #endif /* TARGETDATA_H */

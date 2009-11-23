@@ -1,5 +1,5 @@
  #include "TargetData.h"
-
+ClassImp(TargetData)
 /////////////////////////////////////////////////////////
 TargetData::TargetData(void)
 {}

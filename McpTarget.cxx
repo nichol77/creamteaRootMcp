@@ -29,7 +29,7 @@ McpTarget::McpTarget()
   loadPedestal();
   fTargetDataPtr=0;
 
-  useSyncUsb(1);
+  useSyncUsb(0);
   setTermValue(0,1,0);
   enablePedestal(false);
   setPedRowCol(0,0);
