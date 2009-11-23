@@ -95,6 +95,7 @@ void McpTarget::generatePedestals()
       for(int event=0;event<fNumPedEvents;event++) {
 	//Send software trigger
 	sendSoftTrig();
+	usleep(1000);
 	Int_t retVal=justReadBuffer();
 	if(retVal<0) continue;
 	//Now unpack the data into a more useful structure
@@ -151,10 +152,10 @@ int McpTarget::readEvent()
   setWbias(1000); ///< ~1us allegedly
   setTrigThresh(1639); ///< 1.4v
   
-  usleep(1000);
+
   
   sendSoftTrig();
-   
+  usleep(1000);   
     
   counter++;
   Int_t retVal=justReadBuffer();
