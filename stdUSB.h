@@ -28,7 +28,7 @@ private:
     struct usb_device* init(void);
 
     #define INVALID_HANDLE_VALUE NULL
-    #define USB_TOUT_MS 1100 //1.1 secs
+    #define USB_TOUT_MS 200 //200 ms
     //#define USB_TOUT_MS 50  // 50 ms
     #define USBFX2_EP_WRITE 0x02 //USBFX2 end point address for bulk write
     #define USBFX2_EP_READ 0x86 //USBFX2 end point address for bulk read

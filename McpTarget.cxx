@@ -56,7 +56,11 @@ Int_t McpTarget::justReadBuffer()
     std::cerr << "USB failed to initalize.\n";
     exit(0);
   }
-  fTheUsb.readData(fReadoutBuffer, BUFFERSIZE, &bytesRead);
+  bool retVal=fTheUsb.readData(fReadoutBuffer, BUFFERSIZE, &bytesRead);
+  if(retVal!=stdUSB::SUCCEED) { 
+    sleep(1);
+    retVal=fTheUsb.readData(fReadoutBuffer, BUFFERSIZE, &bytesRead);
+  }
   fTheUsb.freeHandles();
 
   if(fDumpRawHexData) {
