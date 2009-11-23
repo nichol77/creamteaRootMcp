@@ -370,6 +370,7 @@ void McpTarget:: sendSoftTrig()
     exit(0);
   }
   fTheUsb.sendData(SOFT_TRIG_MASK);
+  fTheUsb.freeHandles();
 }
 
 
