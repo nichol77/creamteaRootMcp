@@ -1,4 +1,6 @@
 #include "McpTarget.h"
+#include "TargetData.h"
+
 #include <iostream>
 #include <fstream>
 
@@ -12,11 +14,13 @@ stdUSB fTheUsb;
 McpTarget::McpTarget() 
   :fExtTrigMode(0),fEventNumber(0),fNumPedEvents(100)
 {
-  for(int chan=0;chan<NUM_CHANNELS;chan++) {
-    for(int row=0;row<NUM_ROWS;row++) {
-      for(int col=0;col<NUM_COLS;col++) {
-	for(int samp=0;samp<SAMPLES_PER_COL;samp++) {
-	  fPedestalValues[chan][row][col][samp]=2000;
+  for(int chip=0;chip<NUM_TARGETS;chip++) {
+    for(int chan=0;chan<NUM_CHANNELS;chan++) {
+      for(int row=0;row<NUM_ROWS;row++) {
+	for(int col=0;col<NUM_COLS;col++) {
+	  for(int samp=0;samp<SAMPLES_PER_COL;samp++) {
+	    fPedestalValues[chan][row][col][samp]=2000;
+	  }
 	}
       }
     }
@@ -25,19 +29,16 @@ McpTarget::McpTarget()
 
   if (fTheUsb.createHandles() != stdUSB::SUCCEED) {
     std::cerr << "USB failed to initalize.\n";
+    exit(0);
   }
 
   useSyncUsb(0);
-  setTermValue(1,0,0);
+  setTermValue(0,1,0);
   enablePedestal(false);
   setPedRowCol(0,0);
-  asumOrDtrig(true);
-  setTrigPolarity(1);
+  setTrigPolarity(false); //Falling edge
   setWbias(1000); ///< ~1us allegedly
-  setAsumThresh(2294); ///< 1.4v
-  setTrigThresh(1); ///< 1.4v
-  useEventCounter(1);
-  setPedRowCol(0,0);
+  setTrigThresh(1639); ///< 1.4v
 
 }
 
@@ -46,71 +47,97 @@ McpTarget::~McpTarget()
   fTheUsb.freeHandles();
 }
 
+Int_t McpTarget::justReadBuffer()
+{
+  //This only read the data from the USB thingy and sticks it into
+  // fReadoutBuffer
+  
+  //Zero fReadoutBuffer
+  memset(fReadoutBuffer,0,BUFFERSIZE*sizeof(unsigned short));
+
+  int bytesRead=0;
+  fTheUsb.readData(fReadoutBuffer, BUFFERSIZE, &bytesRead);
+
+  if(fDumpRawHexData) {
+    ofstream HexDump("eventHexDump.txt");
+    for(int i=0;i<BUFFERSIZE;i++) {
+      HexDump << dec << i << "\t" << hex << "\t" << fReadoutBuffer[i] << "\n";
+    }
+  }
+
+  if(bytesRead<BUFFERSIZE) {	
+    std::cerr << "Only read " << bytesRead << " of " << BUFFERSIZE << "\n";
+    return -1;
+  }
+
+
+  return 0;
+}
+
+
 void McpTarget::generatePedestals() 
 {
   short unsigned int *tmpBuffer = &fReadoutBuffer[0];
   int bytesRead;
-  Double_t tempValues[NUM_CHANNELS][NUM_ROWS][NUM_COLS][SAMPLES_PER_COL]={{{{0}}}};
+  Double_t tempValues[NUM_TARGETS][NUM_CHANNELS][NUM_ROWS][NUM_COLS][SAMPLES_PER_COL]={{{{{0}}}}};
   Int_t countStuff[NUM_ROWS][NUM_COLS]={{0}};
   
-
-
   UInt_t rowLoc,colLoc,pixLoc;
   Int_t row,col;
   TFile *fpTemp = new TFile("pedFile.root","RECREATE");
   TTree *pedTree = new TTree("pedTree","Tree of pedestal thingies");    
-  pedTree->Branch("values",&fReadoutBuffer[0],"values[1040]/s");
+  TargetData *targetPtr=0;
+  pedTree->Branch("target","TargetData",&targetPtr);
+  pedTree->Branch("values",&fReadoutBuffer[0],"values[4140]/s");
   pedTree->Branch("row",&rowLoc,"row/I");
   pedTree->Branch("col",&colLoc,"col/I");
 
   for(row=0;row<NUM_ROWS;row++) {
     for(col=0;col<NUM_COLS;col++) {	
-      //      setPedRowCol(row,col);      
+      setPedRowCol(row,col);      
+      
       for(int event=0;event<fNumPedEvents;event++) {
 	//Send software trigger
 	sendSoftTrig();
-
-	fTheUsb.readData(tmpBuffer, BUFFERSIZE, &bytesRead);
-	if(bytesRead<BUFFERSIZE) {	
-	  std::cerr << "Only read " << bytesRead << " of " << BUFFERSIZE << "\n";
-	  continue;
-	}
-	pedTree->Fill();
-     
-		
-	getMemAddress(tmpBuffer[2],rowLoc,colLoc,pixLoc);
-	//	std::cout << "Row Col Pix\t" << rowLoc << "\t" << colLoc << "\t" << pixLoc << "\n";
-	//	std::cout << "tmpBuffer[3] " << tmpBuffer[3] << "\t" << fPedestalValues[0][rowLoc][colLoc][0] << "\n";
-	countStuff[rowLoc][colLoc]++;
-	for(int chan=0;chan<NUM_CHANNELS;chan++) {
-	  for(int samp=0;samp<SAMPLES_PER_COL;samp++) {
-	    int i=3+ SAMPLES_PER_COL*chan + samp;
-	    tempValues[chan][rowLoc][colLoc][samp]+=tmpBuffer[i];
+	Int_t retVal=justReadBuffer();
+	if(retVal<0) continue;
+	//Now unpack the data into a more useful structure
+	TargetData targetData(this->fReadoutBuffer);
+	targetPtr=&targetData;
+	pedTree->Fill();	
+	countStuff[row][loc]++;
+	for(int chip=0;chip<NUM_TARGETS;chip++) {
+	  for(int chan=0;chan<NUM_CHANNELS;chan++) {
+	    for(int samp=0;samp<SAMPLES_PER_COL;samp++) {
+	      Float_t value=(Float_t)targetData.DATA[chip][chan][sample];
+	      tempValues[chip][chan][row][col][samp]=value;
+	    }
 	  }
 	}
       }
-    
-    }  
+    }
     std::cout << "Read " << fNumPedEvents << " events from " << row << "\n";
-    
-    
   }
+        
   pedTree->AutoSave();
   delete fpTemp;
   
   std::ofstream PedFile("pedestal.txt");
-  for(int chan=0;chan<NUM_CHANNELS;chan++) {
-    for(int row=0;row<NUM_ROWS;row++) {
-      for(int col=0;col<NUM_COLS;col++) {
-	for(int samp=0;samp<SAMPLES_PER_COL;samp++) {
-	  if(countStuff[row][col]>0) 
-	    tempValues[chan][row][col][samp]/=countStuff[row][col];
-	  fPedestalValues[chan][row][col][samp]=(Int_t)tempValues[chan][row][col][samp];
-	  PedFile << fPedestalValues[chan][row][col][samp] << "\n";
+  for(int chip=0;chip<NUM_TARGETS;chip++) {
+    for(int chan=0;chan<NUM_CHANNELS;chan++) {
+      for(int row=0;row<NUM_ROWS;row++) {
+	for(int col=0;col<NUM_COLS;col++) {
+	  for(int samp=0;samp<SAMPLES_PER_COL;samp++) {
+	    if(countStuff[row][col]>0) {
+	      tempValues[chip][chan][row][col][samp]/=countStuff[row][col];
+	      fPedestalValues[chip][chan][row][col][samp]=(Int_t)tempValues[chip][chan][row][col][samp];
+	    }
+	    PedFile << fPedestalValues[chip][chan][row][col][samp] << "\n";
+	  }
 	}
       }
-    }
-  } 
+    } 
+  }
 }
 
 int McpTarget::readEvent()
@@ -121,35 +148,38 @@ int McpTarget::readEvent()
   int bytesRead;
   UInt_t rowLoc,colLoc,pixLoc;
   static int counter=0;	
-  //  setPedRowCol(0,0);      
-  //  usleep(1000);
-  //  setPedRowCol(1,counter%32);
+    
+
+  useSyncUsb(0);
+  setTermValue(0,1,0);
+  enablePedestal(false);
+  setPedRowCol(0,0);
+  setTrigPolarity(false); //Falling edge
+  setWbias(1000); ///< ~1us allegedly
+  setTrigThresh(1639); ///< 1.4v
   
-   
+  usleep(1000);
+  
   sendSoftTrig();
-    //    usleep(1000);
+   
     
   counter++;
-  fTheUsb.readData(tmpBuffer, BUFFERSIZE, &bytesRead);
-  if(bytesRead<BUFFERSIZE) {
-    //Couldn't read an event
-    
-    std::cerr << "Only read " << bytesRead << " of " << BUFFERSIZE << "\n";
+  Int_t retVal=justReadBuffer();
+  if(retVal<0) {
     return -1;
   }
   
-    //  for(int i=0;i<BUFFERSIZE;i++) {
-    //    std::cout << i << "\t" << tmpBuffer[i] << "\n";
-    //  }
   
-  getMemAddress(tmpBuffer[2],rowLoc,colLoc,pixLoc);
-  //  std::cout << "Row Col Pix\t" << rowLoc << "\t" << colLoc << "\t" << pixLoc << "\n";
-  //  std::cout << "tmpBuffer[3] " << tmpBuffer[3] << "\t" << fPedestalValues[0][rowLoc][colLoc][0] << "\n";
-  for(int chan=0;chan<NUM_CHANNELS;chan++) {
-    for(int samp=0;samp<SAMPLES_PER_COL;samp++) {
-      int i=3+samp + chan*SAMPLES_PER_COL;	
-      fPedSubbedBuffer[chan][samp]=int(tmpBuffer[i])-fPedestalValues[chan][rowLoc][colLoc][samp];      
-      fVoltBuffer[chan][samp]=fPedSubbedBuffer[chan][samp]*VOLTS_PER_COUNT;
+  TargetData targetData(fReadoutBuffer);
+  
+  for(int chip=0;chip<NUM_TARGETS;chip++) {
+    for(int chan=0;chan<NUM_CHANNELS;chan++) {
+      for(int samp=0;samp<SAMPLES_PER_COL;samp++) {
+	Double_t value = fDnlLUT[targetData.DATA[chip][chan][samp]];
+	//DNL_LUT.txt
+	value-=fPedestalValues[chip][chan][targetData.ROW_LOC[chip]][targetData.COL_LOC[i]][samp];
+	fVoltBuffer[chip][chan][samp]=value;
+      }
     }
   }
   //  std::cout << "fPedSubbedBuffer[0][0] " << fPedSubbedBuffer[0][0] << "\n";
@@ -160,27 +190,27 @@ int McpTarget::readEvent()
   return 1;
 }
 
-void McpTarget::setExtTrigMode(int mode)
-{
-  if(fExtTrigMode==mode) return;
-  fExtTrigMode=mode;
-  if(fExtTrigMode) {
-    fTheUsb.sendData(0x10001);
-  }
-  else {
-    fTheUsb.sendData(0x00001);
-    // do some dummy readouts before we continue
-    unsigned short int tmpData[5];
-    int read;
-    for(int i=0; i < 5; i++) {
-      usleep(10000);
-      fTheUsb.sendData(0x00002);
-      usleep(10000);
-      fTheUsb.readData(tmpData, 2, &read);
-    }
-  }
+// void McpTarget::setExtTrigMode(int mode)
+// {
+//   if(fExtTrigMode==mode) return;
+//   fExtTrigMode=mode;
+//   if(fExtTrigMode) {
+//     fTheUsb.sendData(0x10001);
+//   }
+//   else {
+//     fTheUsb.sendData(0x00001);
+//     // do some dummy readouts before we continue
+//     unsigned short int tmpData[5];
+//     int read;
+//     for(int i=0; i < 5; i++) {
+//       usleep(10000);
+//       fTheUsb.sendData(0x00002);
+//       usleep(10000);
+//       fTheUsb.readData(tmpData, 2, &read);
+//     }
+//   }
 
-}
+// }
 
 TGraph *McpTarget::getChannel(int channel)
 {
@@ -202,19 +232,21 @@ void McpTarget::loadPedestal()
   Int_t value;
   std::ifstream PedFile("pedestal.txt");
   if(PedFile) {
-    for(int chan=0;chan<NUM_CHANNELS;chan++) {
-      for(int row=0;row<NUM_ROWS;row++) {
-	for(int col=0;col<NUM_COLS;col++) {
-	  for(int samp=0;samp<SAMPLES_PER_COL;samp++) {
-	    PedFile >> value;
-	    fPedestalValues[chan][row][col][samp]=value;
+    for(int chip=0;chip<NUM_TARGETS;chip++) {
+      for(int chan=0;chan<NUM_CHANNELS;chan++) {
+	for(int row=0;row<NUM_ROWS;row++) {
+	  for(int col=0;col<NUM_COLS;col++) {
+	    for(int samp=0;samp<SAMPLES_PER_COL;samp++) {
+	      PedFile >> value;
+	      fPedestalValues[chip][chan][row][col][samp]=value;
+	    }
 	  }
 	}
       }
     }
+    PedFile.close();
   }
 }
-
 
 
 void McpTarget::setPedRowCol(Int_t row, Int_t col)
@@ -236,28 +268,11 @@ void McpTarget::enablePedestal(Int_t flag)
   }
 }
 
-void McpTarget::asumOrDtrig(Int_t flag)
-{
-  if(flag==1) {
-    fTheUsb.sendData(ENABLE_ASUM_MASK);
-  }
-  else {
-    fTheUsb.sendData(ENABLE_DTRIG_MASK);
-  } 
-  
-}
 
 void McpTarget::setWbias(UInt_t value)
 {
   UInt_t dataVal = WBIAS_MASK;
   dataVal |= (value << WBIAS_SHIFT);
-  fTheUsb.sendData(dataVal);
-}
-
-void McpTarget::setAsumThresh(UInt_t value) 
-{
-  UInt_t dataVal=ASUM_THRESH_MASK;
-  dataVal |= (value&0xffff) << TRIG_THRESH_SHIFT;
   fTheUsb.sendData(dataVal);
 }
 
@@ -316,18 +331,28 @@ void McpTarget:: useEventCounter(Int_t flag)
   }
 }
 
-
-void McpTarget::getMemAddress(UInt_t memAddrSpace, UInt_t &rowLoc, UInt_t &colLoc,
-			   UInt_t &pixLoc)
+void McpTarget::loadDnlLookUpTable()
 {
-  const unsigned int MASK_COL = 0x000001F0;
-  const unsigned int MASK_ROW = 0x00000E00;
-
-  colLoc = memAddrSpace & MASK_COL;
-  rowLoc = memAddrSpace & MASK_ROW;
-    
-  pixLoc = colLoc;
-  colLoc = colLoc >> 4;
-  rowLoc = rowLoc >> 9;
-
+  std::ifstream DNL("DNL_LUT.txt");
+  int sampVal;
+  double lutVal;
+  for(i=0;i<4096;i++) {
+    DNL >> sampVal >> lutVal;
+    fDnlLUT[sampVal]=lutVal;
+  }
 }
+
+// void McpTarget::getMemAddress(UInt_t memAddrSpace, UInt_t &rowLoc, UInt_t &colLoc,
+// 			   UInt_t &pixLoc)
+// {
+//   const unsigned int MASK_COL = 0x000001F0;
+//   const unsigned int MASK_ROW = 0x00000E00;
+
+//   colLoc = memAddrSpace & MASK_COL;
+//   rowLoc = memAddrSpace & MASK_ROW;
+    
+//   pixLoc = colLoc;
+//   colLoc = colLoc >> 4;
+//   rowLoc = rowLoc >> 9;
+
+// }

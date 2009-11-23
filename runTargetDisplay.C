@@ -17,7 +17,7 @@ void runTargetDisplay() {
 //   myTarget->generatePedestals();
 //   exit(0);
 
-  TargetDisplay *targetPtr = new TargetDisplay();
+  McpTargetDisplay *targetPtr = new McpTargetDisplay();
   targetPtr->startEventDisplay();
   
 }

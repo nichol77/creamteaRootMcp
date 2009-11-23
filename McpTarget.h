@@ -22,26 +22,27 @@ class McpTarget
 
   void generatePedestals();
   void loadPedestal();
+  void loadDnlLookUpTable();
   Int_t readEvent();
+  Int_t justReadBuffer();
   void setExtTrigMode(Int_t mode);
   void useSyncUsb(Int_t flag);
   void sendSoftTrig();
   void useEventCounter(Int_t flag);
   void setPedRowCol(Int_t row, Int_t col);
   void enablePedestal(Int_t flag);
-  void asumOrDtrig(Int_t flag);
   void setWbias(UInt_t value);
-  void setAsumThresh(UInt_t value);
   void setTrigThresh(UInt_t value);
   void setTermValue(Int_t f100, Int_t f1k, Int_t f10k);
   void setTrigPolarity(Int_t flag); ///< 1 is negative, 0 is positive
-  void getMemAddress(UInt_t memAddrSpace, UInt_t &rowLoc, UInt_t &colLoc,
-		     UInt_t &pixLoc);
+  //  void getMemAddress(UInt_t memAddrSpace, UInt_t &rowLoc, UInt_t &colLoc,
+  //		     UInt_t &pixLoc);
 
   TGraph *getChannel(Int_t channel);
 
 
  private:
+  Int_t fDumpRawHexData; ///< Whether or not to dump out the raw hex data 
   Int_t fTermMode; ///< 100, 1k, 10k 
   Int_t fSampMode; ///< Unclear
   Int_t fExtTrigMode; ///< On or off
@@ -53,7 +54,8 @@ class McpTarget
   Int_t fPedSubbedBuffer[NUM_TARGETS][NUM_CHANNELS][SAMPLES_PER_COL]; ///<Again who knows or dares to dream
   Float fDnlLUT[4096]; ///< No idea what this is, or why it is 4096
   Float_t fPedestalValues[NUM_TARGETS][NUM_CHANNELS][NUM_ROWS][NUM_COLS][SAMPLES_PER_COL];
-  Float_t fVoltBuffer[NUM_CHANNELS][SAMPLES_PER_COL];
+  Float_t fVoltBuffer[NUM_TARGETS][NUM_CHANNELS][SAMPLES_PER_COL];
+  Float_t fDNLLookUpTable[4096];
 
 };
 
