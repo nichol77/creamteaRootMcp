@@ -78,20 +78,16 @@ Int_t McpTarget::justReadBuffer()
 
 void McpTarget::generatePedestals() 
 {
-  short unsigned int *tmpBuffer = &fReadoutBuffer[0];
   int bytesRead;
   Double_t tempValues[NUM_TARGETS][NUM_CHANNELS][NUM_ROWS][NUM_COLS][SAMPLES_PER_COL]={{{{{0}}}}};
   Int_t countStuff[NUM_ROWS][NUM_COLS]={{0}};
   
-  UInt_t rowLoc,colLoc,pixLoc;
   Int_t row,col;
   TFile *fpTemp = new TFile("pedFile.root","RECREATE");
   TTree *pedTree = new TTree("pedTree","Tree of pedestal thingies");    
   TargetData *targetPtr=0;
   pedTree->Branch("target","TargetData",&targetPtr);
   pedTree->Branch("values",&fReadoutBuffer[0],"values[4140]/s");
-  pedTree->Branch("row",&rowLoc,"row/I");
-  pedTree->Branch("col",&colLoc,"col/I");
 
   for(row=0;row<NUM_ROWS;row++) {
     for(col=0;col<NUM_COLS;col++) {	
@@ -145,9 +141,7 @@ int McpTarget::readEvent()
 {
   //Read data from USB class (stdUSB.cpp) since we dont have the device yet 
   //then we are going to read data from test data file 	
-  short unsigned int *tmpBuffer = &fReadoutBuffer[0];
   int bytesRead;
-  UInt_t rowLoc,colLoc,pixLoc;
   static int counter=0;	
     
 
