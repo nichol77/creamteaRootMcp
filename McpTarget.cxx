@@ -540,7 +540,7 @@ void McpTarget::rawReadInts(int numInts, unsigned short buffer[])
 void McpTarget::openOutputFile(char fileName[180])
 {
   fOutputMode=1;
-  fTheOutputFile = new TFile(fileName,"Target Output File");
+  fTheOutputFile = new TFile(fileName,"RECREATE");
   fTheOutputTree = new TTree("mcpTree","Target Output Tree");
   fTheOutputTree->Branch("target","RawTargetData",&fRawTargetDataPtr);
 }
