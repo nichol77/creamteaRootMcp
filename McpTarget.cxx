@@ -12,7 +12,7 @@
 stdUSB fTheUsb;
 
 McpTarget::McpTarget(int offlineMode) 
-  :fOfflineMode(offlineMode),fExtTrigMode(0),fEventNumber(0),fNumPedEvents(100)
+  :fOfflineMode(offlineMode),fExtTrigMode(0),fEventNumber(0),fNumPedEvents(10)
 {
   for(int chip=0;chip<NUM_TARGETS;chip++) {
     for(int chan=0;chan<NUM_CHANNELS;chan++) {
@@ -113,7 +113,8 @@ void McpTarget::generatePedestals()
   TTree *pedTree = new TTree("pedTree","Tree of pedestal thingies");    
   pedTree->Branch("target","RawTargetData",&fRawTargetDataPtr);
   pedTree->Branch("values",&fReadoutBuffer[0],"values[4140]/s");
-
+  enablePedestal(1);
+  
   for(row=0;row<NUM_ROWS;row++) {
     for(col=0;col<NUM_COLS;col++) {	
       setPedRowCol(row,col);      
