@@ -136,7 +136,7 @@ void McpTarget::generatePedestals()
 	  for(int chan=0;chan<NUM_CHANNELS;chan++) {
 	    for(int samp=0;samp<SAMPLES_PER_COL;samp++) {
 	      Float_t value=(Float_t)targetData.data[chip][chan][samp];
-	      tempValues[chip][chan][row][col][samp]=value;
+	      tempValues[chip][chan][row][col][samp]+=value;
 	    }
 	  }
 	}
@@ -223,12 +223,26 @@ void McpTarget::fillVoltageArray(TargetData *targetDataPtr)
 
   for(int chip=0;chip<NUM_TARGETS;chip++) {
     for(int chan=0;chan<NUM_CHANNELS;chan++) {
-      for(int samp=0;samp<SAMPLES_PER_COL;samp++) {
-	Double_t value = fDnlLUT[targetDataPtr->data[chip][chan][samp]];
-	//DNL_LUT.txt
-	value-=fPedestalValues[chip][chan][targetDataPtr->rowLoc[chip]][fTargetDataPtr->colLoc[chip]][samp];
+      for(int samp=0;samp<SAMPLES_PER_COL;samp++)  {
+// 	std::cerr << chip << "\t" << chan << "\t" << samp << "\t"
+// 		  << targetDataPtr->data[chip][chan][samp] << "\n";
+	  
+//	Double_t value = fDnlLUT[targetDataPtr->data[chip][chan][samp]];
+	Double_t value=targetDataPtr->data[chip][chan][samp];
+// 	std::cerr << chip << "\t" << chan << "\t" << samp << "\t"
+// 		  << targetDataPtr->data[chip][chan][samp] << "\t"
+// 		  << value << "\t" << targetDataPtr->rowLoc[chip]
+// 		  <<"\t" << targetDataPtr->colLoc[chip] << "\n";
+	Int_t row=targetDataPtr->rowLoc[chip];
+	Int_t col=targetDataPtr->colLoc[chip];
+// 	std::cerr << row << "\t" << col << "\t" << NUM_ROWS << "\t"
+// 		  << NUM_COLS << "\n";
+// 	std::cerr << fPedestalValues[chip][chan][row][col][samp] << "\n";
+	value-=fPedestalValues[chip][chan][row][col][samp]; 
 	fVoltBuffer[chip][chan][samp]=value;
 	targetDataPtr->fVoltBuffer[chip][chan][samp]=value;
+	//	exit(0);
+	//DNL_LUT.txt 
       }
     }
   }

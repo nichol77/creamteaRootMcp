@@ -38,7 +38,7 @@ endif
 CXXFLAGS     += $(ROOTCFLAGS) $(FFTFLAG) $(SYSINCLUDES) $(INC_RJN_UTIL)
 LDFLAGS      += -g $(ROOTLDFLAGS) 
 
-LIBS          = $(ROOTLIBS) -lMathMore -lMinuit $(SYSLIBS) $(LD_RJN_UTIL) $(FFTLIBS)
+LIBS          = $(ROOTLIBS) -lMathMore -lMinuit $(SYSLIBS) $(LD_RJN_UTIL) $(FFTLIBS) -lusb
 GLIBS         = $(ROOTGLIBS) $(SYSLIBS)
 
 #Now the bits we're actually compiling
@@ -55,7 +55,7 @@ $(ROOT_LIBRARY) : $(LIB_OBJS)
 	@echo "Linking $@ ..."
 ifeq ($(PLATFORM),macosx)
 # We need to make both the .dylib and the .so
-		$(LD) $(SOFLAGS)$@ $(LDFLAGS) $^ $(OutPutOpt) $@
+		$(LD) $(SOFLAGS)$@ $(LIBS) $(LDFLAGS) $^ $(OutPutOpt) $@
 ifneq ($(subst $(MACOSX_MINOR),,1234),1234)
 ifeq ($(MACOSX_MINOR),4)
 		ln -sf $@ $(subst .$(DllSuf),.so,$@)

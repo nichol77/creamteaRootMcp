@@ -12,7 +12,7 @@ StdUSB libusb implementation used here uses same function interface with native 
 
 stdUSB::stdUSB(void) {
     stdUSB::stdHandle = INVALID_HANDLE_VALUE;
-    createHandles();
+    //    createHandles();
 }
 
 stdUSB::~stdUSB(void) {

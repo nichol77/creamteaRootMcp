@@ -19,9 +19,12 @@
 #include "TCanvas.h"
 #include "TTree.h"
 #include "TFile.h"
+#include "TH1.h"
 #include "TButton.h"
 #include "TGroupButton.h"
 #include "TThread.h"
+#include "TStyle.h"
+#include "TLatex.h"
 #include <TGClient.h>
 
 using namespace std;
@@ -105,6 +108,7 @@ void McpTargetDisplay::refreshEventDisplay()
    if(!fMcpTargetCanvas) {
       fMcpTargetCanvas = new TCanvas("canMcpTarget","canMcpTarget",1200,800);
       fMcpTargetCanvas->cd();
+      fMcpTargetCanvas->SetBottomMargin(0);
       drawEventButtons();
    }
    if(!fMcpTargetMainPad) {
@@ -126,9 +130,34 @@ void McpTargetDisplay::refreshEventDisplay()
 
    //For now lets be lazy
    fMcpTargetMainPad->Clear();
-   fMcpTargetMainPad->Divide(8,8);
+   fMcpTargetMainPad->cd();
+   fMcpTargetMainPad->SetBottomMargin(0);
+   TPad *padGraphs = new TPad("padGraphs","padGraphs",0.05,0.,1,0.95);
+   padGraphs->Draw();
+   padGraphs->Divide(8,8,0,0);
+
+   //Now add labels
+   char textLabel[180];
+   TLatex texy;
+   texy.SetTextSize(0.03); 
+   texy.SetTextAlign(12);  
+   for(int column=0;column<8;column++) {
+     sprintf(textLabel,"%d",1+column);
+     texy.DrawTextNDC((column+1)*0.115,0.97,textLabel);
+   }
+   for(int row=0;row<8;row++) {
+     sprintf(textLabel,"%d",1+(8*row));
+     texy.DrawTextNDC(0.02,1-((row+1)*0.114),textLabel);
+  }
+   
+
+   //   fMcpTargetMainPad->Divide(8,8,0,0);
    Double_t maxVal=0;
    char graphName[180];
+   Double_t minTime=0;
+   Double_t maxTime=64;
+   Double_t minFreq=0;
+   Double_t maxFreq=500;
    for(int chan=0;chan<NUM_TOTAL_CHANNELS;chan++) {
      sprintf(graphName,"Channel %d",chan+1);
      if(gr[chan]) delete gr[chan];
@@ -141,21 +170,41 @@ void McpTargetDisplay::refreshEventDisplay()
      fft[chan] = (wv[chan]->getFFT());
      fft[chan]->SetLineColor(9);
 
-     if(FFTtools::getPeakSqVal(wv[chan])>maxVal)
-       maxVal=FFTtools::getPeakSqVal(wv[chan]);
+     Double_t sqVal=FFTtools::getPeakSqVal(wv[chan]);
+     //     std::cout << chan << "\t" << sqVal << "\n"; 
+     if(sqVal>maxVal)
+       maxVal=sqVal;
      wv[chan]->SetTitle(graphName);
      fft[chan]->SetTitle(graphName);
      
+
    }
+   gStyle->SetTitle(0);
+   gStyle->SetLabelSize(0.1,"xy");
+   gStyle->SetTitleSize(0.1,"x");
    maxVal=TMath::Sqrt(maxVal);
+   if(maxVal>4000) maxVal=4000;
    for(int chan=0;chan<NUM_TOTAL_CHANNELS;chan++) {
-     fMcpTargetMainPad->cd(chan+1);
+     padGraphs->cd(chan+1);
+     if((chan+1)%8==0)
+       gPad->SetRightMargin(0.01);
+     if(chan>=56) {
+       gPad->SetBottomMargin(0.2);       
+     }
      wv[chan]->SetMaximum(maxVal*1.2);
      wv[chan]->SetMinimum(-1.2*maxVal);
-     if(fView==1) 
-       wv[chan]->Draw("al");
+     if(fView==1)  {
+       TH1F *framey = gPad->DrawFrame(minTime,-1.2*maxVal,maxTime,1.2*maxVal);
+       if(chan>=56) {
+	 framey->GetYaxis()->SetLabelSize(0.08);
+       }
+       framey->SetXTitle("Time (ns)");       
+       wv[chan]->Draw("l");
+     }
      if(fView==2)
        fft[chan]->Draw("al");
+     
+
    }
 
   
@@ -174,6 +223,7 @@ int McpTargetDisplay::displayNextEvent()
       fTheOfflineTree->GetEntry(fTheOfflineEntry);
       if(fTheTargetDataPtr) 
 	delete fTheTargetDataPtr;
+      //      std::cerr << fTheTargetDataPtr << "\t" <<fTheRawTargetDataPtr << "\n";
       fTheTargetDataPtr=new TargetData(fTheRawTargetDataPtr);
       fTheMcpTarget.fillVoltageArray(fTheTargetDataPtr);
       fTheOfflineEntry++;

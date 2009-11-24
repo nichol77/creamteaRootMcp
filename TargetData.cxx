@@ -23,42 +23,43 @@ TargetData::TargetData(unsigned short rawData[])
 /////////////////////////////////////////////////////////
 void TargetData::unpackData()
 {  
-  unsigned int raw_temp[4];
-  unsigned int raw_rovdd[4];
-  unsigned int raw_scaler[4][3];
+  unsigned int raw_temp[NUM_TARGETS];
+  unsigned int raw_rovdd[NUM_TARGETS];
+  unsigned int raw_scaler[NUM_TARGETS][3];
   int count = 1;
-  int i,j,k;
-  
-  for(i=0; i<4; i++){
-    memAddrSpace[i] = raw[count];
-	count++;    
-    for(j=0; j<16; j++){
-	  for(k=0; k<64; k++){
-        data[i][j][k] = raw[count];
-		count++;
+  int chip,channel,samp;
+  int j;
+
+  for(chip=0; chip<NUM_TARGETS; chip++){
+    memAddrSpace[chip] = raw[count];
+    count++;    
+    for(channel=0; channel<NUM_CHANNELS; channel++){
+      for(samp=0; samp<SAMPLES_PER_COL; samp++){
+        data[chip][channel][samp] = raw[count];
+	count++;
       }
-	}
+    }
     for(j=0; j<3; j++){   
-      raw_scaler[i][j] = raw[count];
+      raw_scaler[chip][j] = raw[count];
 	  count++;
     }
-    thresh[i] = raw[count];
+    thresh[chip] = raw[count];
 	count++;   
-    raw_rovdd[i] = raw[count];
+    raw_rovdd[chip] = raw[count];
 	count++;   
-    wbias[i] = raw[count];
+    wbias[chip] = raw[count];
 	count++;   
-    feedback[i] = raw[count];
+    feedback[chip] = raw[count];
 	count++;   
-    raw_temp[i] = raw[count];
+    raw_temp[chip] = raw[count];
 	count++;   
   }	
 
-  for(i=0; i<4; i++){
-    temperature[i] = (float)raw_temp[i]*0.03125;//degree C
-    rovdd[i] = (float)raw_rovdd[i]*2.5/4096;//volts
+  for(chip=0; chip<4; chip++){
+    temperature[chip] = (float)raw_temp[chip]*0.03125;//degree C
+    rovdd[chip] = (float)raw_rovdd[chip]*2.5/4096;//volts
     for(j=0; j<3; j++){ 	
-      scaler[i][j] = (float)raw_scaler[i][j]/60.0;//Hz	
+      scaler[chip][j] = (float)raw_scaler[chip][j]/60.0;//Hz	
     }
   }
   unpackMemAddrSpace();
@@ -70,16 +71,16 @@ void TargetData::unpackMemAddrSpace()
     const unsigned int MASK_ROW = 0x00000E00;
     const unsigned int MASK_COL = 0x000001F0;
     const unsigned int MASK_HITBIT = 0x00008000;
-    for(int i=0;i<NUM_TARGETS;i++) {
-      rowLoc[i] = memAddrSpace[i] & MASK_ROW;
-      rowLoc[i] = rowLoc[i] >> 9;
+    for(int chip=0;chip<NUM_TARGETS;chip++) {
+      rowLoc[chip] = memAddrSpace[chip] & MASK_ROW;
+      rowLoc[chip] = rowLoc[chip] >> 9;
     
-      colLoc[i] = memAddrSpace[i] & MASK_COL;	
-      pixLoc[i] = colLoc[i];
-      colLoc[i] = colLoc[i] >> 4;	
+      colLoc[chip] = memAddrSpace[chip] & MASK_COL;	
+      pixLoc[chip] = colLoc[chip];
+      colLoc[chip] = colLoc[chip] >> 4;	
 
-      hitBit[i] = memAddrSpace[i] & MASK_HITBIT;
-      hitBit[i] = hitBit[i] >> 15;	
+      hitBit[chip] = memAddrSpace[chip] & MASK_HITBIT;
+      hitBit[chip] = hitBit[chip] >> 15;	
     }
 }
 /////////////////////////////////////////////////////////
@@ -90,20 +91,36 @@ void TargetData::unpackFeedback()
     const unsigned int MASK_COL = 0x000001F0;
     const unsigned int MASK_TERM = 0x0000000E;	
     const unsigned int MASK_EN_PED = 0x00000001;
-    for(int i=0;i<NUM_TARGETS;i++) {
-      sign[i] = feedback[i] & MASK_SGN;
-      sign[i] = sign[i] >> 12;
+    for(int chip=0;chip<NUM_TARGETS;chip++) {
+      sign[chip] = feedback[chip] & MASK_SGN;
+      sign[chip] = sign[chip] >> 12;
     
-      pedRowAddr[i] = feedback[i] & MASK_ROW;   	
-      pedRowAddr[i] = pedRowAddr[i] >> 9;	
+      pedRowAddr[chip] = feedback[chip] & MASK_ROW;   	
+      pedRowAddr[chip] = pedRowAddr[chip] >> 9;	
       
-      pedColAddr[i] = feedback[i] & MASK_COL;
-      pedColAddr[i] = pedColAddr[i] >> 4;
+      pedColAddr[chip] = feedback[chip] & MASK_COL;
+      pedColAddr[chip] = pedColAddr[chip] >> 4;
       
-      term[i] = feedback[i] & MASK_TERM;
-      term[i] = term[i] >> 1;
+      term[chip] = feedback[chip] & MASK_TERM;
+      term[chip] = term[chip] >> 1;
       
-      enPed[i] = feedback[i] & MASK_EN_PED;
+      enPed[chip] = feedback[chip] & MASK_EN_PED;
     }
 }
 /////////////////////////////////////////////////////////
+
+
+TGraph *TargetData::getChannel(int chip, int channel)
+{
+  if(chip<0 || chip>=NUM_TARGETS) return NULL;
+  if(channel<0 || channel>=NUM_CHANNELS) return NULL;
+  
+  Double_t timeVals[SAMPLES_PER_COL]={0};
+  Double_t voltVals[SAMPLES_PER_COL]={0};
+  for(int samp=0;samp<SAMPLES_PER_COL;samp++) {
+     timeVals[samp]=Double_t(samp); //Should multiple by delta t here
+     voltVals[samp]=fVoltBuffer[chip][channel][samp];
+  }
+  TGraph *gr = new TGraph(SAMPLES_PER_COL,timeVals,voltVals);
+  return gr;
+}
