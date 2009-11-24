@@ -156,8 +156,8 @@ void McpTargetDisplay::refreshEventDisplay()
    char graphName[180];
    Double_t minTime=0;
    Double_t maxTime=64;
-   Double_t minFreq=0;
-   Double_t maxFreq=500;
+   //   Double_t minFreq=0;
+   //   Double_t maxFreq=500;
    for(int chan=0;chan<NUM_TOTAL_CHANNELS;chan++) {
      sprintf(graphName,"Channel %d",chan+1);
      if(gr[chan]) delete gr[chan];
