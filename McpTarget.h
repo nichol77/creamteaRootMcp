@@ -54,6 +54,7 @@ class McpTarget
   TargetData *getTargetData() {return fTargetDataPtr;}
   void fillVoltageArray(TargetData *targetDataPtr);
   void openOutputFile(char filename[]);
+  void saveOutputFile();
 
  private:
   Int_t fOfflineMode;

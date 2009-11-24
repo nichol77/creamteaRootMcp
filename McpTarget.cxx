@@ -46,6 +46,11 @@ McpTarget::McpTarget(int offlineMode)
 
 McpTarget::~McpTarget()
 {
+  saveOutputFile();
+}
+
+void McpTarget::saveOutputFile()
+{
   if(fOutputMode) {
     if(fTheOutputTree)
       fTheOutputTree->AutoSave();
