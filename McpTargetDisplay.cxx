@@ -29,7 +29,8 @@ using namespace std;
 McpTargetDisplay*  McpTargetDisplay::fgInstance = 0;
 //Leave these as global variables for now
 
-McpTargetDisplay::McpTargetDisplay()
+McpTargetDisplay::McpTargetDisplay(int offlineMode,TFile *inputFile)
+ :fOfflineMode(offlineMode),fTheMcpTarget(offlineMode)
 {
   //Default constructor
   fInEventPlayMode=0;
@@ -43,17 +44,16 @@ McpTargetDisplay::McpTargetDisplay()
   fTheOfflineFile=0;
   fTheOfflineTree=0;
   fTheTargetDataPtr=0;
-  fOfflineMode=0;
-  fOutputMode=0;
+  fTheRawTargetDataPtr=0;
   fTheOfflineEntry=0;
+  if(inputFile) {
+    setOfflineMode(inputFile);
+  }
   
 }
 
 McpTargetDisplay::~McpTargetDisplay()
 {
-   //Default destructor
-  if(fOutputMode && fTheOfflineTree)
-    fTheOfflineTree->AutoSave();
 }
 
 
@@ -65,14 +65,6 @@ McpTargetDisplay*  McpTargetDisplay::Instance()
 {
    //static function
    return (fgInstance) ? (McpTargetDisplay*) fgInstance : new McpTargetDisplay();
-}
-
-void McpTargetDisplay::openOutputFile(char fileName[180])
-{
-  fOutputMode=1;
-  fTheOfflineFile = new TFile(fileName,"Target Output File");
-  fTheOfflineTree = new TTree("mcpTree","Target Output Tree");
-  fTheOfflineTree->Branch("target","TargetData",&fTheTargetDataPtr);
 }
 
 
@@ -89,7 +81,7 @@ void McpTargetDisplay::setOfflineMode(TFile *inputFile)
     std::cerr << "No input tree -- giving up\n";
     exit(0);
   }
-  fTheOfflineTree->SetBranchAddress("target",&fTheTargetDataPtr);
+  fTheOfflineTree->SetBranchAddress("target",&fTheRawTargetDataPtr);
     
 
 }
@@ -176,12 +168,14 @@ int McpTargetDisplay::displayNextEvent()
   if(!fOfflineMode) {
     gotEvent=fTheMcpTarget.readEvent();
     fTheTargetDataPtr=fTheMcpTarget.getTargetData(); //Do not delete
-    if(fOutputMode) 
-      fTheOfflineTree->Fill();
   }
   else {
     if(fTheOfflineEntry<fTheOfflineTree->GetEntries()) {
       fTheOfflineTree->GetEntry(fTheOfflineEntry);
+      if(fTheTargetDataPtr) 
+	delete fTheTargetDataPtr;
+      fTheTargetDataPtr=new TargetData(fTheRawTargetDataPtr);
+      fTheMcpTarget.fillVoltageArray(fTheTargetDataPtr);
       fTheOfflineEntry++;
       gotEvent=1;
     }    

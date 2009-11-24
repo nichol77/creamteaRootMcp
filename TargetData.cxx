@@ -2,7 +2,14 @@
 ClassImp(TargetData)
 /////////////////////////////////////////////////////////
 TargetData::TargetData(void)
+:RawTargetData()
 {}
+
+TargetData::TargetData(RawTargetData *rawPtr)
+  :RawTargetData(*rawPtr)
+{
+  unpackData();
+}
 /////////////////////////////////////////////////////////
 TargetData::~TargetData(void)
 {}

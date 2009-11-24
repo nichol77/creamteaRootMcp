@@ -11,8 +11,8 @@
 
 stdUSB fTheUsb;
 
-McpTarget::McpTarget() 
-  :fExtTrigMode(0),fEventNumber(0),fNumPedEvents(100)
+McpTarget::McpTarget(int offlineMode) 
+  :fExtTrigMode(0),fEventNumber(0),fNumPedEvents(100),fOfflineMode(offlineMode)
 {
   for(int chip=0;chip<NUM_TARGETS;chip++) {
     for(int chan=0;chan<NUM_CHANNELS;chan++) {
@@ -28,23 +28,36 @@ McpTarget::McpTarget()
   loadDnlLookUpTable();
   loadPedestal();
   fTargetDataPtr=0;
+  fRawTargetDataPtr=0;
+  fTheOutputFile=0;
+  fTheOutputTree=0;
+  fOutputMode=0;
 
-  useSyncUsb(0);
-  setTermValue(0,1,0);
-  enablePedestal(false);
-  setPedRowCol(0,0);
-  setTrigPolarity(false); //Falling edge
-  setWbias(1000); ///< ~1us allegedly
-  setTrigThresh(1639); ///< 1.4v
-
+  if(!fOfflineMode) {
+    useSyncUsb(0);
+    setTermValue(0,1,0);
+    enablePedestal(false);
+    setPedRowCol(0,0);
+    setTrigPolarity(false); //Falling edge
+    setWbias(1000); ///< ~1us allegedly
+    setTrigThresh(1639); ///< 1.4v
+  }
 }
 
 McpTarget::~McpTarget()
 {
+  if(fOutputMode) {
+    if(fTheOutputTree)
+      fTheOutputTree->AutoSave();
+  }
 }
 
 Int_t McpTarget::justReadBuffer()
 {
+  if(fOfflineMode) {
+    std::cerr << "Running in offline mode can't read buffer\n";
+    return 0;
+  }
   //This only read the data from the USB thingy and sticks it into
   // fReadoutBuffer
   
@@ -82,13 +95,18 @@ Int_t McpTarget::justReadBuffer()
 
 void McpTarget::generatePedestals() 
 {
+
+  if(fOfflineMode) {
+    std::cerr << "Running in offline mode can't generate pedestals\n";
+    return;
+  }
   Double_t tempValues[NUM_TARGETS][NUM_CHANNELS][NUM_ROWS][NUM_COLS][SAMPLES_PER_COL]={{{{{0}}}}};
   Int_t countStuff[NUM_ROWS][NUM_COLS]={{0}};
   
   Int_t row,col;
   TFile *fpTemp = new TFile("pedFile.root","RECREATE");
   TTree *pedTree = new TTree("pedTree","Tree of pedestal thingies");    
-  pedTree->Branch("target","TargetData",&fTargetDataPtr);
+  pedTree->Branch("target","RawTargetData",&fRawTargetDataPtr);
   pedTree->Branch("values",&fReadoutBuffer[0],"values[4140]/s");
 
   for(row=0;row<NUM_ROWS;row++) {
@@ -104,7 +122,9 @@ void McpTarget::generatePedestals()
 	if(retVal<0) continue;
 	//Now unpack the data into a more useful structure
 	TargetData targetData(this->fReadoutBuffer);
+	RawTargetData rawTargetData(this->fReadoutBuffer);
 	fTargetDataPtr=&targetData;
+	fRawTargetDataPtr=&rawTargetData;
 	pedTree->Fill();	
 	countStuff[row][col]++;
 	for(int chip=0;chip<NUM_TARGETS;chip++) {
@@ -144,6 +164,11 @@ void McpTarget::generatePedestals()
 
 int McpTarget::readEvent()
 {
+
+  if(fOfflineMode) {
+    std::cerr << "Running in offline mode can't read event\n";
+    return 0;
+  }
   //Read data from USB class (stdUSB.cpp) since we dont have the device yet 
   //then we are going to read data from test data file 	
   static int counter=0;	
@@ -169,27 +194,39 @@ int McpTarget::readEvent()
   }
   
   if(fTargetDataPtr)
-    delete fTargetDataPtr;
+    delete fTargetDataPtr;  
   fTargetDataPtr = new TargetData(fReadoutBuffer);
-  
-  
-  for(int chip=0;chip<NUM_TARGETS;chip++) {
-    for(int chan=0;chan<NUM_CHANNELS;chan++) {
-      for(int samp=0;samp<SAMPLES_PER_COL;samp++) {
-	Double_t value = fDnlLUT[fTargetDataPtr->data[chip][chan][samp]];
-	//DNL_LUT.txt
-	value-=fPedestalValues[chip][chan][fTargetDataPtr->rowLoc[chip]][fTargetDataPtr->colLoc[chip]][samp];
-	fVoltBuffer[chip][chan][samp]=value;
-      }
-    }
+  if(fOutputMode) {
+    if(fRawTargetDataPtr) 
+      delete fRawTargetDataPtr;
+    fRawTargetDataPtr = new RawTargetData(fReadoutBuffer);
+    fTheOutputTree->Fill();
   }
-  memcpy(fTargetDataPtr->fVoltBuffer,fVoltBuffer,sizeof(Float_t)*NUM_TARGETS*NUM_CHANNELS*SAMPLES_PER_COL);
-  
+
+  //Do the pedestal subtraction and voltage conversion
+  fillVoltageArray(fTargetDataPtr);
+
   //  std::cout << "fPedSubbedBuffer[0][0] " << fPedSubbedBuffer[0][0] << "\n";
 
   fEventNumber++;
    
   return 1;
+}
+
+void McpTarget::fillVoltageArray(TargetData *targetDataPtr)
+{
+
+  for(int chip=0;chip<NUM_TARGETS;chip++) {
+    for(int chan=0;chan<NUM_CHANNELS;chan++) {
+      for(int samp=0;samp<SAMPLES_PER_COL;samp++) {
+	Double_t value = fDnlLUT[targetDataPtr->data[chip][chan][samp]];
+	//DNL_LUT.txt
+	value-=fPedestalValues[chip][chan][targetDataPtr->rowLoc[chip]][fTargetDataPtr->colLoc[chip]][samp];
+	fVoltBuffer[chip][chan][samp]=value;
+	targetDataPtr->fVoltBuffer[chip][chan][samp]=value;
+      }
+    }
+  }
 }
 
 // void McpTarget::setExtTrigMode(int mode)
@@ -274,6 +311,11 @@ void McpTarget::loadPedestal()
 
 void McpTarget::setPedRowCol(Int_t row, Int_t col)
 {
+
+  if(fOfflineMode) {
+    std::cerr << "Running in offline mode can't set ped row col\n";
+    return;
+  }
   UInt_t dataVal=0;
   dataVal = PED_ROW_COL_MASK;
   dataVal |= (row << PED_ROW_SHIFT);
@@ -288,6 +330,11 @@ void McpTarget::setPedRowCol(Int_t row, Int_t col)
 
 void McpTarget::enablePedestal(Int_t flag)
 {
+
+  if(fOfflineMode) {
+    std::cerr << "Running in offline mode can't enable pedestal\n";
+    return;
+  }
 
   if (fTheUsb.createHandles() != stdUSB::SUCCEED) {
     std::cerr << "USB failed to initalize.\n";
@@ -305,6 +352,11 @@ void McpTarget::enablePedestal(Int_t flag)
 
 void McpTarget::setWbias(UInt_t value)
 {
+
+  if(fOfflineMode) {
+    std::cerr << "Running in offline mode can't set WBIAS\n";
+    return;
+  }
   UInt_t dataVal = WBIAS_MASK;
   dataVal |= (value << WBIAS_SHIFT);
   if (fTheUsb.createHandles() != stdUSB::SUCCEED) {
@@ -318,6 +370,11 @@ void McpTarget::setWbias(UInt_t value)
 
 void McpTarget::setTrigThresh(UInt_t value)
 {
+
+  if(fOfflineMode) {
+    std::cerr << "Running in offline mode can't set trigger threshold\n";
+    return;
+  }
   UInt_t dataVal=TRIG_THRESH_MASK;
   dataVal |= (value&0xffff) << TRIG_THRESH_SHIFT;
   if (fTheUsb.createHandles() != stdUSB::SUCCEED) {
@@ -330,6 +387,11 @@ void McpTarget::setTrigThresh(UInt_t value)
 
 void McpTarget::setTermValue(Int_t f100, Int_t f1k, Int_t f10k) 
 {
+
+  if(fOfflineMode) {
+    std::cerr << "Running in offline mode can't set TERM value\n";
+    return;
+  }
   UInt_t dataVal=TERM_MASK;
   dataVal |= (f100&0x1) << TERM_100_OHMS_SHIFT;
   dataVal |= (f1k&0x1) << TERM_1K_OHMS_SHIFT;
@@ -348,6 +410,10 @@ void McpTarget::setTermValue(Int_t f100, Int_t f1k, Int_t f10k)
 void McpTarget::setTrigPolarity(Int_t flag)
 {
 
+  if(fOfflineMode) {
+    std::cerr << "Running in offline mode can't send trigger polarity\n";
+    return;
+  }
   if (fTheUsb.createHandles() != stdUSB::SUCCEED) {
     std::cerr << "USB failed to initalize.\n";
     exit(0);
@@ -365,6 +431,10 @@ void McpTarget::setTrigPolarity(Int_t flag)
 void McpTarget:: useSyncUsb(Int_t flag)
 {
 
+  if(fOfflineMode) {
+    std::cerr << "Running in offline mode can't send USB sync\n";
+    return;
+  }
   if (fTheUsb.createHandles() != stdUSB::SUCCEED) {
     std::cerr << "USB failed to initalize.\n";
     exit(0);
@@ -381,6 +451,10 @@ void McpTarget:: useSyncUsb(Int_t flag)
 void McpTarget:: sendSoftTrig()
 {
 
+  if(fOfflineMode) {
+    std::cerr << "Running in offline mode can't send software trigger\n";
+    return;
+  }
   if (fTheUsb.createHandles() != stdUSB::SUCCEED) {
     std::cerr << "USB failed to initalize.\n";
     exit(0);
@@ -420,6 +494,10 @@ void McpTarget::loadDnlLookUpTable()
 void McpTarget::rawSendInt(unsigned int value)
 {
 
+  if(fOfflineMode) {
+    std::cerr << "Running in offline mode can't sent int\n";
+    return;
+  }
   if (fTheUsb.createHandles() != stdUSB::SUCCEED) {
     std::cerr << "USB failed to initalize.\n";
     exit(0);
@@ -433,6 +511,10 @@ void McpTarget::rawSendInt(unsigned int value)
 void McpTarget::rawReadInts(int numInts, unsigned short buffer[])
 {
 
+  if(fOfflineMode) {
+    std::cerr << "Running in offline mode can't read buffer\n";
+    return;
+  }
   if (fTheUsb.createHandles() != stdUSB::SUCCEED) {
     std::cerr << "USB failed to initalize.\n";
     exit(0);
@@ -447,4 +529,13 @@ void McpTarget::rawReadInts(int numInts, unsigned short buffer[])
     }
   }
   fTheUsb.freeHandles();
+}
+
+
+void McpTarget::openOutputFile(char fileName[180])
+{
+  fOutputMode=1;
+  fTheOutputFile = new TFile(fileName,"Target Output File");
+  fTheOutputTree = new TTree("mcpTree","Target Output Tree");
+  fTheOutputTree->Branch("target","RawTargetData",&fRawTargetDataPtr);
 }

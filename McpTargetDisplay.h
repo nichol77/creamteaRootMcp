@@ -16,6 +16,7 @@
 
 #include "McpTarget.h" //The interface class
 #include "TargetData.h" //The data class
+#include "RawTargetData.h" //The data class
 
 class TCanvas;
 class TPad;
@@ -28,7 +29,7 @@ class McpTargetDisplay
 {
  public:
   
-  McpTargetDisplay();
+  McpTargetDisplay(int offlineMode=0,TFile *inputFile=0);
   ~McpTargetDisplay();
   
   static McpTargetDisplay* Instance();
@@ -40,7 +41,6 @@ class McpTargetDisplay
 
   //Waveform event display stuff
   void setOfflineMode(TFile *inputFile);
-  void openOutputFile(char filename[180]);
   void startEventDisplay(); //these are 
   int displayNextEvent(); // all the
   void refreshEventDisplay(); // same
@@ -70,10 +70,10 @@ class McpTargetDisplay
 
    McpTarget fTheMcpTarget;
    TargetData *fTheTargetDataPtr;
+   RawTargetData *fTheRawTargetDataPtr;
    TFile *fTheOfflineFile;
    TTree *fTheOfflineTree;
    Int_t fOfflineMode;
-   Int_t fOutputMode;
    Long64_t fTheOfflineEntry;
 };
 

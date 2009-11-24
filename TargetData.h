@@ -10,6 +10,7 @@ class TargetData: public RawTargetData
 {
  public:
   TargetData();
+  TargetData(RawTargetData *rawData);
   TargetData(unsigned short rawData[BUFFERSIZE]);
   ~TargetData();  
   void unpackData();

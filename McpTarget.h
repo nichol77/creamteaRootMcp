@@ -7,18 +7,21 @@
 #define MCPTARGET
 //ROOT includes
 #include "TGraph.h"
+#include "TFile.h"
+#include "TTree.h"
 
 //rootTarget includes
 #include "Defs.h"
 #include "TargetData.h"
+#include "RawTargetData.h"
 
 
 
 
 class McpTarget 
 {
- public:
-  McpTarget();
+ public:  
+  McpTarget(int offlineMode=0);
   ~McpTarget();
 
   void setDumpHexData(int value) {fDumpRawHexData=value;}
@@ -49,8 +52,12 @@ class McpTarget
   TGraph *getChannel(Int_t chip, Int_t channel);
 
   TargetData *getTargetData() {return fTargetDataPtr;}
+  void fillVoltageArray(TargetData *targetDataPtr);
+  void openOutputFile(char filename[]);
 
  private:
+  Int_t fOfflineMode;
+  Int_t fOutputMode; /// Are we writing out ROOT files?
   Int_t fDumpRawHexData; ///< Whether or not to dump out the raw hex data 
   Int_t fTermMode; ///< 100, 1k, 10k 
   Int_t fSampMode; ///< Unclearxs
@@ -66,7 +73,10 @@ class McpTarget
   Float_t fVoltBuffer[NUM_TARGETS][NUM_CHANNELS][SAMPLES_PER_COL];
   Float_t fDNLLookUpTable[4096];
   TargetData *fTargetDataPtr;
-
+  RawTargetData *fRawTargetDataPtr;
+  TFile *fTheOutputFile;
+  TTree *fTheOutputTree;
+   
 };
 
 
