@@ -25,6 +25,7 @@
 #include "TThread.h"
 #include "TStyle.h"
 #include "TLatex.h"
+#include "TPaveText.h"
 #include <TGClient.h>
 
 using namespace std;
@@ -52,6 +53,11 @@ McpTargetDisplay::McpTargetDisplay(int offlineMode,TFile *inputFile)
   if(inputFile) {
     setOfflineMode(inputFile);
   }
+  fFarRightPave=0;
+  fFarLeftPave=0;
+  fMidLeftPave=0;
+  fMidMidPave=0;
+  fMidRightPave=0;
   
 }
 
@@ -119,10 +125,159 @@ void McpTargetDisplay::refreshEventDisplay()
    }
    if(!fMcpTargetEventInfoPad) {
       fMcpTargetCanvas->cd();
-      fMcpTargetEventInfoPad= new TPad("canMcpTargetEventInfo","canMcpTargetEventInfo",0.2,0.91,0.8,0.99);
+      fMcpTargetEventInfoPad= new TPad("canMcpTargetEventInfo","canMcpTargetEventInfo",0.15,0.91,0.85,0.99);
       fMcpTargetEventInfoPad->Draw();
       fMcpTargetCanvas->Update();
    } 
+
+   //Update info pad with tings of interest
+   char textLabel[180];
+   fMcpTargetEventInfoPad->Clear();
+   fMcpTargetEventInfoPad->Divide(5,1);
+   fMcpTargetEventInfoPad->cd(1);
+   if(fFarLeftPave) delete fFarLeftPave;
+   fFarLeftPave = new TPaveText(0,0.01,1,1);
+   fFarLeftPave->SetName("farLeftPave");
+   fFarLeftPave->SetBorderSize(0);
+   fFarLeftPave->SetFillColor(0);
+   fFarLeftPave->SetTextAlign(13);
+   for(int chip=0;chip<NUM_TARGETS;chip++) {
+     sprintf(textLabel,"Mem. Addr. %d -- %#x ",chip,fTheTargetDataPtr->memAddrSpace[chip]);
+     fFarLeftPave->AddText(textLabel);
+   }
+   fFarLeftPave->Draw();
+   fMcpTargetEventInfoPad->cd(2);
+   if(fMidLeftPave) delete fMidLeftPave;
+   fMidLeftPave = new TPaveText(0,0.01,1,1);
+   fMidLeftPave->SetName("midLeftPave");
+   fMidLeftPave->SetBorderSize(0);
+   fMidLeftPave->SetFillColor(0);
+   fMidLeftPave->SetTextAlign(13);
+   sprintf(textLabel,"Row -- %d,%d,%d,%d",
+	   fTheTargetDataPtr->rowLoc[0],
+	   fTheTargetDataPtr->rowLoc[1],
+	   fTheTargetDataPtr->rowLoc[2],
+	   fTheTargetDataPtr->rowLoc[3]);
+   fMidLeftPave->AddText(textLabel);
+   sprintf(textLabel,"Col -- %d,%d,%d,%d",
+	   fTheTargetDataPtr->colLoc[0],
+	   fTheTargetDataPtr->colLoc[1],
+	   fTheTargetDataPtr->colLoc[2],
+	   fTheTargetDataPtr->colLoc[3]);
+   fMidLeftPave->AddText(textLabel);
+   sprintf(textLabel,"HITBIT -- %d,%d,%d,%d",
+	   fTheTargetDataPtr->hitBit[0],
+	   fTheTargetDataPtr->hitBit[1],
+	   fTheTargetDataPtr->hitBit[2],
+	   fTheTargetDataPtr->hitBit[3]);
+   fMidLeftPave->AddText(textLabel);
+   sprintf(textLabel,"Thresh -- %d,%d,%d,%d",
+	   fTheTargetDataPtr->thresh[0],
+	   fTheTargetDataPtr->thresh[1],
+	   fTheTargetDataPtr->thresh[2],
+	   fTheTargetDataPtr->thresh[3]);
+   fMidLeftPave->AddText(textLabel);
+   fMidLeftPave->Draw();
+   fMcpTargetEventInfoPad->cd(3);
+   if(fMidMidPave) delete fMidMidPave;
+   fMidMidPave = new TPaveText(0,0.01,1,1);
+   fMidMidPave->SetName("midMidPave");
+   fMidMidPave->SetBorderSize(0);
+   fMidMidPave->SetFillColor(0);
+   fMidMidPave->SetTextAlign(13);
+   sprintf(textLabel,"ROVDD -- %2.2f,%2.2f,%2.2f,%2.2f",
+	   fTheTargetDataPtr->rovdd[0],
+	   fTheTargetDataPtr->rovdd[1],
+	   fTheTargetDataPtr->rovdd[2],
+	   fTheTargetDataPtr->rovdd[3]);
+   fMidMidPave->AddText(textLabel);
+   sprintf(textLabel,"Scaler0 -- %3.2f,%3.2f,%3.2f,%3.2f",
+	   fTheTargetDataPtr->scaler[0][0],
+	   fTheTargetDataPtr->scaler[1][0],
+	   fTheTargetDataPtr->scaler[2][0],
+	   fTheTargetDataPtr->scaler[3][0]);
+   fMidMidPave->AddText(textLabel);
+   sprintf(textLabel,"Scaler1 -- %3.2f,%3.2f,%3.2f,%3.2f",
+	   fTheTargetDataPtr->scaler[0][0],
+	   fTheTargetDataPtr->scaler[1][1],
+	   fTheTargetDataPtr->scaler[2][1],
+	   fTheTargetDataPtr->scaler[3][1]);
+   fMidMidPave->AddText(textLabel);
+   sprintf(textLabel,"Scaler2 -- %3.1f,%3.1f,%3.1f,%3.1f",
+	   fTheTargetDataPtr->scaler[0][2],
+	   fTheTargetDataPtr->scaler[1][2],
+	   fTheTargetDataPtr->scaler[2][2],
+	   fTheTargetDataPtr->scaler[3][2]);
+   fMidMidPave->AddText(textLabel);
+   fMidMidPave->Draw();
+   fMcpTargetEventInfoPad->cd(4);
+   if(fMidRightPave) delete fMidRightPave;
+   fMidRightPave = new TPaveText(0,0.01,1,1);
+   fMidRightPave->SetName("midRightPave");
+   fMidRightPave->SetBorderSize(0);
+   fMidRightPave->SetFillColor(0);
+   fMidRightPave->SetTextAlign(13);
+   sprintf(textLabel,"FB -- %#x,%#x,%#x,%#x",
+	   fTheTargetDataPtr->feedback[0],
+	   fTheTargetDataPtr->feedback[1],
+	   fTheTargetDataPtr->feedback[2],
+	   fTheTargetDataPtr->feedback[3]);
+   fMidRightPave->AddText(textLabel);
+   sprintf(textLabel,"WB -- %d,%d,%d,%d",
+	   fTheTargetDataPtr->wbias[0],
+	   fTheTargetDataPtr->wbias[1],
+	   fTheTargetDataPtr->wbias[2],
+	   fTheTargetDataPtr->wbias[3]);
+   fMidRightPave->AddText(textLabel);
+   sprintf(textLabel,"EnPed -- %d,%d,%d,%d",
+	   fTheTargetDataPtr->enPed[0],
+	   fTheTargetDataPtr->enPed[1],
+	   fTheTargetDataPtr->enPed[2],
+	   fTheTargetDataPtr->enPed[3]);
+   fMidRightPave->AddText(textLabel);
+   sprintf(textLabel,"Term -- %d,%d,%d,%d",
+	   fTheTargetDataPtr->term[0],
+	   fTheTargetDataPtr->term[1],
+	   fTheTargetDataPtr->term[2],
+	   fTheTargetDataPtr->term[3]);
+   fMidRightPave->AddText(textLabel);
+   fMidRightPave->Draw();
+   fMcpTargetEventInfoPad->cd(5);
+   if(fFarRightPave) delete fFarRightPave;
+   fFarRightPave = new TPaveText(0,0.01,1,1);
+   fFarRightPave->SetName("farRightPave");
+   fFarRightPave->SetBorderSize(0);
+   fFarRightPave->SetFillColor(0);
+   fFarRightPave->SetTextAlign(13);
+   sprintf(textLabel,"Temp - %3.1f,%3.1f,%3.1f,%3.1fC",
+	   fTheTargetDataPtr->temperature[0],
+	   fTheTargetDataPtr->temperature[1],
+	   fTheTargetDataPtr->temperature[2],
+	   fTheTargetDataPtr->temperature[3]);
+   fFarRightPave->AddText(textLabel);
+   sprintf(textLabel,"Sign -- %d,%d,%d,%d",
+	   fTheTargetDataPtr->sign[0],
+	   fTheTargetDataPtr->sign[1],
+	   fTheTargetDataPtr->sign[2],
+	   fTheTargetDataPtr->sign[3]);
+   fFarRightPave->AddText(textLabel);
+   sprintf(textLabel,"PedRowAddr -- %d,%d,%d,%d",
+	   fTheTargetDataPtr->pedRowAddr[0],
+	   fTheTargetDataPtr->pedRowAddr[1],
+	   fTheTargetDataPtr->pedRowAddr[2],
+	   fTheTargetDataPtr->pedRowAddr[3]);
+   fFarRightPave->AddText(textLabel);
+   sprintf(textLabel,"PedColAddr -- %d,%d,%d,%d",
+	   fTheTargetDataPtr->pedColAddr[0],
+	   fTheTargetDataPtr->pedColAddr[1],
+	   fTheTargetDataPtr->pedColAddr[2],
+	   fTheTargetDataPtr->pedColAddr[3]);
+   fFarRightPave->AddText(textLabel);
+   fFarRightPave->Draw();
+   
+   
+
+
 
    static TGraph *gr[NUM_TOTAL_CHANNELS]={0};
    static WaveformGraph *wv[NUM_TOTAL_CHANNELS]={0};
@@ -137,7 +292,6 @@ void McpTargetDisplay::refreshEventDisplay()
    padGraphs->Divide(8,8,0,0);
 
    //Now add labels
-   char textLabel[180];
    TLatex texy;
    texy.SetTextSize(0.03); 
    texy.SetTextAlign(12);  

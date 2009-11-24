@@ -55,7 +55,7 @@ void TargetData::unpackData()
 	count++;   
   }	
 
-  for(chip=0; chip<4; chip++){
+  for(chip=0; chip<NUM_TARGETS; chip++){
     temperature[chip] = (float)raw_temp[chip]*0.03125;//degree C
     rovdd[chip] = (float)raw_rovdd[chip]*2.5/4096;//volts
     for(j=0; j<3; j++){ 	

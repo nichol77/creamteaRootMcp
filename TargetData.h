@@ -24,7 +24,7 @@ class TargetData: public RawTargetData
   unsigned int data[NUM_TARGETS][NUM_CHANNELS][SAMPLES_PER_COL]; 
   float scaler[NUM_TARGETS][3];//Hz
   unsigned int thresh[NUM_TARGETS];
-  float rovdd[3];//volts
+  float rovdd[NUM_TARGETS];//volts
   unsigned int wbias[NUM_TARGETS];
   unsigned int feedback[NUM_TARGETS];
   unsigned int sign[NUM_TARGETS];  

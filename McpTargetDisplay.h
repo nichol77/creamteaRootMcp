@@ -24,6 +24,7 @@ class TButton;
 class TTreeIndex;
 class TFile;
 class TThread;
+class TPaveText;
 
 class McpTargetDisplay 
 {
@@ -60,6 +61,13 @@ class McpTargetDisplay
    TCanvas *fMcpTargetCanvas; //The main canvas
    TPad *fMcpTargetMainPad;
    TPad *fMcpTargetEventInfoPad;
+
+   TPaveText *fFarLeftPave;
+   TPaveText *fMidLeftPave;
+   TPaveText *fMidMidPave;
+   TPaveText *fMidRightPave;
+   TPaveText *fFarRightPave;
+
 
    TButton *fWaveformButton;
    TButton *fPowerButton;
