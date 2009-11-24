@@ -12,7 +12,7 @@
 stdUSB fTheUsb;
 
 McpTarget::McpTarget(int offlineMode) 
-  :fOfflineMode(offlineMode),fExtTrigMode(0),fEventNumber(0),fNumPedEvents(10)
+  :fOfflineMode(offlineMode),fExtTrigMode(0),fEventNumber(0),fNumPedEvents(100)
 {
   for(int chip=0;chip<NUM_TARGETS;chip++) {
     for(int chan=0;chan<NUM_CHANNELS;chan++) {
