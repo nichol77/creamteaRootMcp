@@ -51,7 +51,7 @@ class McpTargetDisplay
   int getEventDisplayPlaySleep() {return fEventPlaySleepMs;}
   void drawEventButtons();
 
-  McpTarget *getMcpTargetPointer() {return &(this->fTheMcpTarget);}
+  McpTarget *getMcpTargetPointer() {return &(fTheMcpTarget);}
 
  protected:
    static McpTargetDisplay *fgInstance;  

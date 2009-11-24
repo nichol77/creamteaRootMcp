@@ -25,6 +25,7 @@ McpTarget::McpTarget(int offlineMode)
       }
     }
   }
+  fSoftTrigMode=0;
   loadDnlLookUpTable();
   loadPedestal();
   fTargetDataPtr=0;
@@ -180,18 +181,19 @@ int McpTarget::readEvent()
   static int counter=0;	
     
 
-  useSyncUsb(0);
-  setTermValue(0,1,0);
-  enablePedestal(false);
-  setPedRowCol(0,0);
-  setTrigPolarity(false); //Falling edge
-  setWbias(1000); ///< ~1us allegedly
-  setTrigThresh(1639); ///< 1.4v
-  
+  if(counter<2) {
+    useSyncUsb(0);
+    setTermValue(0,1,0);
+    enablePedestal(false);
+    setPedRowCol(0,0);
+    setTrigPolarity(false); //Falling edge
+    setWbias(1000); ///< ~1us allegedly
+    setTrigThresh(1639); ///< 1.4v
+  }
 
-  
-  sendSoftTrig();
-  usleep(1000);   
+  if(fSoftTrigMode) {
+    sendSoftTrig();
+  }
     
   counter++;
   Int_t retVal=justReadBuffer();

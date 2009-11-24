@@ -24,6 +24,7 @@ class McpTarget
   McpTarget(int offlineMode=0);
   ~McpTarget();
 
+  void setSoftTrigMode(int flag) {fSoftTrigMode=flag;}
   void setDumpHexData(int value) {fDumpRawHexData=value;}
   void rawSendInt(unsigned int value);
   void rawReadInts(int numInts, unsigned short buffer[]);
@@ -60,6 +61,7 @@ class McpTarget
   Int_t fOfflineMode;
   Int_t fOutputMode; /// Are we writing out ROOT files?
   Int_t fDumpRawHexData; ///< Whether or not to dump out the raw hex data 
+  Int_t fSoftTrigMode; ///< Should we send software triggers before each event?
   Int_t fTermMode; ///< 100, 1k, 10k 
   Int_t fSampMode; ///< Unclearxs
   Int_t fExtTrigMode; ///< On or off
