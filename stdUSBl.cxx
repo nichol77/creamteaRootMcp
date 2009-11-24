@@ -191,7 +191,7 @@ bool stdUSB::readData(unsigned short * pData, int l, int* lread)// throw(...)
 	}
       }
       else {           
-	printf("error code: %d %s\n", strerror(-1 * retval));	  
+	printf("error code: %d %s\n", retval,strerror(-1 * retval));	  
 	*lread = retval;
       }
       return FAILED;

@@ -30,7 +30,7 @@ McpTargetDisplay*  McpTargetDisplay::fgInstance = 0;
 //Leave these as global variables for now
 
 McpTargetDisplay::McpTargetDisplay(int offlineMode,TFile *inputFile)
- :fOfflineMode(offlineMode),fTheMcpTarget(offlineMode)
+  :fTheMcpTarget(offlineMode),fOfflineMode(offlineMode)
 {
   //Default constructor
   fInEventPlayMode=0;

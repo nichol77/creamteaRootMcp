@@ -9,14 +9,14 @@ include Makefile.arch
 SYSINCLUDES	= 
 SYSLIBS         = 
 
-ifdef ANITA_UTIL_INSTALL_DIR
-ANITA_UTIL_LIB_DIR=${ANITA_UTIL_INSTALL_DIR}/lib
-ANITA_UTIL_INC_DIR=${ANITA_UTIL_INSTALL_DIR}/include
-LD_ANITA_UTIL=-L$(ANITA_UTIL_LIB_DIR)
-INC_ANITA_UTIL=-I$(ANITA_UTIL_INC_DIR)
+ifdef RJN_UTIL_INSTALL_DIR
+RJN_UTIL_LIB_DIR=${RJN_UTIL_INSTALL_DIR}/lib
+RJN_UTIL_INC_DIR=${RJN_UTIL_INSTALL_DIR}/include
+LD_RJN_UTIL=-L$(RJN_UTIL_LIB_DIR)
+INC_RJN_UTIL=-I$(RJN_UTIL_INC_DIR)
 else
-ANITA_UTIL_LIB_DIR=/usr/local/lib
-ANITA_UTIL_INC_DIR=/usr/local/include
+RJN_UTIL_LIB_DIR=/usr/local/lib
+RJN_UTIL_INC_DIR=/usr/local/include
 endif
 
 #Toggles the FFT functions on and off
@@ -30,11 +30,15 @@ FFTLIBS =
 FFTFLAG =
 endif
 
+ifdef USE_GOOGLE_PROFILER
+SYSLIBS +=-lprofiler
+endif
+
 #Generic and Site Specific Flags
-CXXFLAGS     += $(ROOTCFLAGS) $(FFTFLAG) $(SYSINCLUDES) $(INC_ANITA_UTIL)
+CXXFLAGS     += $(ROOTCFLAGS) $(FFTFLAG) $(SYSINCLUDES) $(INC_RJN_UTIL)
 LDFLAGS      += -g $(ROOTLDFLAGS) 
 
-LIBS          = $(ROOTLIBS) -lMathMore -lMinuit $(SYSLIBS) $(LD_ANITA_UTIL) $(FFTLIBS)
+LIBS          = $(ROOTLIBS) -lMathMore -lMinuit $(SYSLIBS) $(LD_RJN_UTIL) $(FFTLIBS)
 GLIBS         = $(ROOTGLIBS) $(SYSLIBS)
 
 #Now the bits we're actually compiling
@@ -51,15 +55,17 @@ $(ROOT_LIBRARY) : $(LIB_OBJS)
 	@echo "Linking $@ ..."
 ifeq ($(PLATFORM),macosx)
 # We need to make both the .dylib and the .so
-	$(LD) $(SOFLAGS) $^ $(OutPutOpt) $@
+		$(LD) $(SOFLAGS)$@ $(LDFLAGS) $^ $(OutPutOpt) $@
+ifneq ($(subst $(MACOSX_MINOR),,1234),1234)
 ifeq ($(MACOSX_MINOR),4)
-	ln -sf $@ $(subst .$(DLLSUF),.so,$@)
+		ln -sf $@ $(subst .$(DllSuf),.so,$@)
 else
-	$(LD) -bundle -undefined $(UNDEFOPT) $(LDFLAGS) $^ \
-	 $(OutPutOpt) $(subst .$(DLLSUF),.so,$@)
+		$(LD) -bundle -undefined $(UNDEFOPT) $(LDFLAGS) $^ \
+		   $(OutPutOpt) $(subst .$(DllSuf),.so,$@)
+endif
 endif
 else
-	$(LD) $(SOFLAGS) $(LDFLAGS) $(LIB_OBJS) $(LIBS) -o $@
+	$(LD) $(SOFLAGS) $(LDFLAGS) $(LIBS) $(LIB_OBJS) -o $@
 endif
 
 %.$(OBJSUF) : %.$(SRCSUF)
@@ -74,15 +80,17 @@ endif
 targetDict.C: $(CLASS_HEADERS)
 	@echo "Generating dictionary ..."
 	@ rm -f *Dict* 
-	rootcint $@ -c $(INC_ANITA_UTIL)  $(CLASS_HEADERS) LinkDef.h
+	rootcint $@ -c $(INC_RJN_UTIL)  $(CLASS_HEADERS) LinkDef.h
 
 install: $(ROOT_LIBRARY)
+	install -d $(RJN_UTIL_LIB_DIR)
+	install -d $(RJN_UTIL_INC_DIR)
 ifeq ($(PLATFORM),macosx)
-	cp $(ROOT_LIBRARY) $(subst .$(DLLSUF),.so,$(ROOT_LIBRARY)) $(ANITA_UTIL_LIB_DIR)
+	install -c -m 755 $(ROOT_LIBRARY) $(subst .$(DLLSUF),.so,$(ROOT_LIBRARY)) $(RJN_UTIL_LIB_DIR)
 else
-	cp $(ROOT_LIBRARY) $(ANITA_UTIL_LIB_DIR)
+	install -c -m 755 $(ROOT_LIBRARY) $(RJN_UTIL_LIB_DIR)
 endif
-	cp  $(CLASS_HEADERS) $(ANITA_UTIL_INC_DIR)
+	install -c -m 644  $(CLASS_HEADERS) $(RJN_UTIL_INC_DIR)
 
 clean:
 	@rm -f *Dict*
