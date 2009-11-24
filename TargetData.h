@@ -2,10 +2,11 @@
 #define TARGETDATA_H
 #include "Defs.h"
 #include "TObject.h"
+#include "RawTargetData.h"
 #include "TGraph.h"
 
 
-class TargetData: public TObject
+class TargetData: public RawTargetData
 {
  public:
   TargetData();
@@ -13,24 +14,23 @@ class TargetData: public TObject
   ~TargetData();  
   void unpackData();
 
-  unsigned int RAW[BUFFERSIZE]; 
   //extracted values 
-  unsigned int MEM_ADDR_SPACE[NUM_TARGETS];
-  unsigned int ROW_LOC[NUM_TARGETS];
-  unsigned int COL_LOC[NUM_TARGETS];
-  unsigned int PIX_LOC[NUM_TARGETS];
-  unsigned int HIT_BIT[NUM_TARGETS];
-  unsigned int DATA[NUM_TARGETS][NUM_CHANNELS][SAMPLES_PER_COL]; 
-  float SCALER[NUM_TARGETS][3];//Hz
-  unsigned int THRES[NUM_TARGETS];
-  float ROVDD[3];//volts
-  unsigned int WBIAS[NUM_TARGETS];
-  unsigned int FEEDBACK[NUM_TARGETS];
-  unsigned int SGN[NUM_TARGETS];  
-  unsigned int PED_ROW_ADDR[NUM_TARGETS];  
-  unsigned int PED_COL_ADDR[NUM_TARGETS];  
-  unsigned int TERM[NUM_TARGETS];  
-  unsigned int EN_PED[NUM_TARGETS];  
+  unsigned int memAddrSpace [NUM_TARGETS];
+  unsigned int rowLoc[NUM_TARGETS];
+  unsigned int colLoc[NUM_TARGETS];
+  unsigned int pixLoc[NUM_TARGETS];
+  unsigned int hitBit[NUM_TARGETS];
+  unsigned int data[NUM_TARGETS][NUM_CHANNELS][SAMPLES_PER_COL]; 
+  float scaler[NUM_TARGETS][3];//Hz
+  unsigned int thresh[NUM_TARGETS];
+  float rovdd[3];//volts
+  unsigned int wbias[NUM_TARGETS];
+  unsigned int feedback[NUM_TARGETS];
+  unsigned int sign[NUM_TARGETS];  
+  unsigned int pedRowAddr[NUM_TARGETS];  
+  unsigned int pedColAddr[NUM_TARGETS];  
+  unsigned int term[NUM_TARGETS];  
+  unsigned int enPed[NUM_TARGETS];  
   float temperature[NUM_TARGETS];//degree C
 
   //This is ridiculous I will RSN (real soon now) move to a calibrated and uncalibrated system, but for now I'll be lazy;
@@ -43,9 +43,9 @@ class TargetData: public TObject
   }
   TGraph *getChannel(Int_t chip, Int_t channel);
  private:
-  void GetMEM_ADDR(unsigned int MEM_ADDR_SPACE, unsigned int &ROW_LOC, unsigned int &COL_LOC, unsigned int &PIX_LOC, unsigned int &HIT_BIT);
-  void GetFEEDBACK(unsigned int FEEDBACK, unsigned int &SGN, unsigned int &PED_ROW_ADDR, unsigned int &PED_COL_ADDR, unsigned int &TERM, unsigned int &EN_PED);
-ClassDef(TargetData,1);
+  void unpackMemAddrSpace();
+  void unpackFeedback();
+  ClassDef(TargetData,1);
 };
 
 #endif /* TARGETDATA_H */

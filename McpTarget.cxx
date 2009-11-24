@@ -110,7 +110,7 @@ void McpTarget::generatePedestals()
 	for(int chip=0;chip<NUM_TARGETS;chip++) {
 	  for(int chan=0;chan<NUM_CHANNELS;chan++) {
 	    for(int samp=0;samp<SAMPLES_PER_COL;samp++) {
-	      Float_t value=(Float_t)targetData.DATA[chip][chan][samp];
+	      Float_t value=(Float_t)targetData.data[chip][chan][samp];
 	      tempValues[chip][chan][row][col][samp]=value;
 	    }
 	  }
@@ -176,9 +176,9 @@ int McpTarget::readEvent()
   for(int chip=0;chip<NUM_TARGETS;chip++) {
     for(int chan=0;chan<NUM_CHANNELS;chan++) {
       for(int samp=0;samp<SAMPLES_PER_COL;samp++) {
-	Double_t value = fDnlLUT[fTargetDataPtr->DATA[chip][chan][samp]];
+	Double_t value = fDnlLUT[fTargetDataPtr->data[chip][chan][samp]];
 	//DNL_LUT.txt
-	value-=fPedestalValues[chip][chan][fTargetDataPtr->ROW_LOC[chip]][fTargetDataPtr->COL_LOC[chip]][samp];
+	value-=fPedestalValues[chip][chan][fTargetDataPtr->rowLoc[chip]][fTargetDataPtr->colLoc[chip]][samp];
 	fVoltBuffer[chip][chan][samp]=value;
       }
     }
@@ -246,8 +246,13 @@ TGraph *McpTarget::getChannel(int chip, int channel)
 void McpTarget::loadPedestal() 
 {
   Int_t value;
-  std::ifstream PedFile("pedestal.txt");
-  if(PedFile) {
+  std::ifstream PedFile;
+  PedFile.open("pedestal.txt");
+  if(!PedFile.is_open()) {
+    PedFile.open("defaultPed.txt");
+  }
+    
+  if(PedFile.is_open()) {
     for(int chip=0;chip<NUM_TARGETS;chip++) {
       for(int chan=0;chan<NUM_CHANNELS;chan++) {
 	for(int row=0;row<NUM_ROWS;row++) {
@@ -262,6 +267,8 @@ void McpTarget::loadPedestal()
     }
     PedFile.close();
   }
+  
+  
 }
 
 
