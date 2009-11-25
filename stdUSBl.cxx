@@ -48,19 +48,19 @@ bool stdUSB::createHandles(void) {
 
     retval = usb_set_configuration(stdHandle, USBFX2_CNFNO);
     if (retval != 0) {
-      printf("usb_set_configuration -- fail %d\n",retval);
+      printf("usb_set_configuration -- fail %d %s\n",retval,strerror(-1*retval));
       goto fail;
     }
 
     retval = usb_claim_interface(stdHandle, USBFX2_INTFNO);
     if (retval != 0) {
-      printf("usb_set_configuration -- fail %d\n",retval);
+      printf("usb_set_configuration -- fail %d %s\n",retval,strerror(-1*retval));
         goto fail;
     }
 
     retval = usb_set_altinterface(stdHandle, USBFX2_INTFNO);
     if (retval != 0) {
-      printf("usb_set_altinterface -- fail %d\n",retval);
+      printf("usb_set_altinterface -- fail %d %s\n",retval,strerror(-1*retval));
       goto fail;
     }
 
