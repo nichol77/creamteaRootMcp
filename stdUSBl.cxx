@@ -36,24 +36,33 @@ bool stdUSB::createHandles(void) {
     dev = stdUSB::init();
     retval = (long) dev;
 
-    if (retval == 0)
+    if (retval == 0) {
+      printf("stdUSB::init() %d\n",retval);
         goto fail;
-
+    }
     stdHandle = usb_open(dev);
-    if (stdHandle == INVALID_HANDLE_VALUE)
+    if (stdHandle == INVALID_HANDLE_VALUE) {
+        printf("usb_open(dev) fail\n");
         goto fail;
+    }
 
     retval = usb_set_configuration(stdHandle, USBFX2_CNFNO);
-    if (retval != 0)
-        goto fail;
+    if (retval != 0) {
+      printf("usb_set_configuration -- fail %d\n",retval);
+      goto fail;
+    }
 
     retval = usb_claim_interface(stdHandle, USBFX2_INTFNO);
-    if (retval != 0)
+    if (retval != 0) {
+      printf("usb_set_configuration -- fail %d\n",retval);
         goto fail;
+    }
 
     retval = usb_set_altinterface(stdHandle, USBFX2_INTFNO);
-    if (retval != 0)
-        goto fail;
+    if (retval != 0) {
+      printf("usb_set_altinterface -- fail %d\n",retval);
+      goto fail;
+    }
 
     goto ok;
 
@@ -64,7 +73,7 @@ ok:
 
     /* on failure*/
 fail:
-printf("createhandles: FAILED\n");
+    printf("createhandles: FAILED\n");
     return FAILED; // Unable to open usb device. No handle.}
 }
 
