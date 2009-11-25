@@ -37,7 +37,7 @@ bool stdUSB::createHandles(void) {
     retval = (long) dev;
 
     if (retval == 0) {
-      printf("stdUSB::init() %d\n",retval);
+      printf("stdUSB::init() %d %s\n",retval,strerror(-1*retval));
         goto fail;
     }
     stdHandle = usb_open(dev);
