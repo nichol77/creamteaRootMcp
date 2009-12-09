@@ -399,7 +399,7 @@ void McpTarget::setTermValue(Int_t f100, Int_t f1k, Int_t f10k)
   //  dataVal |= ((f10k&0x1) << TERM_10K_OHMS_SHIFT);
   unsigned int dataVal;
   dataVal = f10k << 16 & TERM_MASK;      //10kohms
-  dataVal = f1k  << 17 & dataVal//1kohms
+  dataVal = f1k  << 17 & dataVal;xs//1kohms
   dataVal = f100 << 18 & dataVal;//100ohms
 
 
