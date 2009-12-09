@@ -231,6 +231,10 @@ void McpTarget::fillVoltageArray(TargetData *targetDataPtr)
 	  
 //	Double_t value = fDnlLUT[targetDataPtr->data[chip][chan][samp]];
 	Double_t value=targetDataPtr->data[chip][chan][samp];
+	if(value<800) {
+	  std::cout << chip  << "\t" << chan << "\t" << samp << "\t"
+		    << value << "\n";
+	}
 // 	std::cerr << chip << "\t" << chan << "\t" << samp << "\t"
 // 		  << targetDataPtr->data[chip][chan][samp] << "\t"
 // 		  << value << "\t" << targetDataPtr->rowLoc[chip]
@@ -389,10 +393,16 @@ void McpTarget::setTermValue(Int_t f100, Int_t f1k, Int_t f10k)
     std::cerr << "Running in offline mode can't set TERM value\n";
     return;
   }
-  UInt_t dataVal=TERM_MASK;
-  dataVal |= (f100&0x1) << TERM_100_OHMS_SHIFT;
-  dataVal |= (f1k&0x1) << TERM_1K_OHMS_SHIFT;
-  dataVal |= (f10k&0x1) << TERM_10K_OHMS_SHIFT;
+  //  UInt_t dataVal=TERM_MASK;
+  //  dataVal |= ((f100&0x1) << TERM_100_OHMS_SHIFT);
+  //  dataVal |= ((f1k&0x1) << TERM_1K_OHMS_SHIFT);
+  //  dataVal |= ((f10k&0x1) << TERM_10K_OHMS_SHIFT);
+  unsigned int dataVal;
+  dataVal = f10k << 16 & TERM_MASK;      //10kohms
+  dataVal = f1k  << 17 & dataVal//1kohms
+  dataVal = f100 << 18 & dataVal;//100ohms
+
+
 
 
   fTheUsb.sendData(dataVal);

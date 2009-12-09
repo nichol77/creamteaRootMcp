@@ -373,13 +373,17 @@ int McpTargetDisplay::displayNextEvent()
     fTheTargetDataPtr=fTheMcpTarget.getTargetData(); //Do not delete
   }
   else {
+    //    std::cout << fTheOfflineEntry << "\t" << fTheOfflineTree->GetEntries() << "\n";
     if(fTheOfflineEntry<fTheOfflineTree->GetEntries()) {
       fTheOfflineTree->GetEntry(fTheOfflineEntry);
       if(fTheTargetDataPtr) 
 	delete fTheTargetDataPtr;
       //      std::cerr << fTheTargetDataPtr << "\t" <<fTheRawTargetDataPtr << "\n";
+      //      std::cerr << fTheOfflineEntry << "\t" << fTheRawTargetDataPtr->raw[3] << "\n";
       fTheTargetDataPtr=new TargetData(fTheRawTargetDataPtr);
       fTheMcpTarget.fillVoltageArray(fTheTargetDataPtr);
+      //      std::cerr << fTheOfflineEntry << "\t" << fTheTargetDataPtr->raw[3] << "\t" << fTheTargetDataPtr->data[0][0][0] << "\t" << fTheTargetDataPtr->fVoltBuffer[0][0][0] <<  "\n";
+
       fTheOfflineEntry++;
       gotEvent=1;
     }    

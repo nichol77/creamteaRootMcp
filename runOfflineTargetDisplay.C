@@ -13,7 +13,10 @@ void runOfflineTargetDisplay() {
 
 //   TChain *fred=0; //Will this work?
   
-  TFile *offlineFile = new TFile("outputFile.root");
+//  TFile *offlineFile = new TFile("outFiles/outputFile_251109.root");
+//  TFile *offlineFile = new TFile("outFiles/outputFile_091209.root");
+//  TFile *offlineFile = new TFile("outFiles/outputFile1k.root");
+  TFile *offlineFile = new TFile("outFiles/outputFile1k.root");
   McpTargetDisplay *targetPtr = new McpTargetDisplay(1,offlineFile);
   targetPtr->startEventDisplay();
   
