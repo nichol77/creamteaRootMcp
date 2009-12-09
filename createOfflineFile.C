@@ -16,7 +16,7 @@ void createOfflineFile() {
   std::cout << "Do something\n";
   McpTarget *myTarget = new McpTarget();
   myTarget->openOutputFile("outputFile.root");
-  for(int i=0;i<100;i++) {
+  for(int i=0;i<1000;i++) {
     std::cerr << "*";
     myTarget->sendSoftTrig();
     myTarget->readEvent();
