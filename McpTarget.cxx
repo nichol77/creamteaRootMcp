@@ -231,10 +231,10 @@ void McpTarget::fillVoltageArray(TargetData *targetDataPtr)
 	  
 //	Double_t value = fDnlLUT[targetDataPtr->data[chip][chan][samp]];
 	Double_t value=targetDataPtr->data[chip][chan][samp];
-	if(value<800) {
-	  std::cout << chip  << "\t" << chan << "\t" << samp << "\t"
-		    << value << "\n";
-	}
+	//	if(value<800) {
+	//	  std::cout << chip  << "\t" << chan << "\t" << samp << "\t"
+	//		    << value << "\n";
+	//	}
 // 	std::cerr << chip << "\t" << chan << "\t" << samp << "\t"
 // 		  << targetDataPtr->data[chip][chan][samp] << "\t"
 // 		  << value << "\t" << targetDataPtr->rowLoc[chip]
