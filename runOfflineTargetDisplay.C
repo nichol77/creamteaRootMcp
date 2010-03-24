@@ -7,6 +7,7 @@ void runOfflineTargetDisplay() {
   gSystem->Load("libfftw3.so");
   gSystem->Load("libgsl.so");
   gSystem->Load("libMathMore.so");
+  gSystem->Load("libGraf.so");
   gSystem->Load("libPhysics.so");  
   gSystem->Load("libRootFftwWrapper.so");   
   gSystem->Load("libMcpTargetRoot.so");
