@@ -382,8 +382,8 @@ void McpTarget::setTrigThresh(UInt_t value)
   }
   UInt_t dataVal=TRIG_THRESH_MASK;
   dataVal |= (value&0xffff) << TRIG_THRESH_SHIFT;
-
   fTheUsb.sendData(dataVal);
+  fThresholdValue=value;
 }
 
 void McpTarget::setTermValue(Int_t f100, Int_t f1k, Int_t f10k) 

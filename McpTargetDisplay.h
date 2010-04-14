@@ -25,6 +25,7 @@ class TTreeIndex;
 class TFile;
 class TThread;
 class TPaveText;
+class TSlider;
 
 class McpTargetDisplay 
 {
@@ -35,6 +36,9 @@ class McpTargetDisplay
   
   static McpTargetDisplay* Instance();
 
+  //Threshold stuff
+  void updateThresholdFromSlider();
+  void updateThreshold(UInt_t threshold);
 
   //Event playback mode
   void startEventPlaying();
@@ -71,6 +75,8 @@ class McpTargetDisplay
 
    TButton *fWaveformButton;
    TButton *fPowerButton;
+
+   TSlider *fThresholdSlider;
 
    Int_t fInEventPlayMode;
    Int_t fEventPlaySleepMs;

@@ -17,7 +17,8 @@ void runOfflineTargetDisplay() {
 //  TFile *offlineFile = new TFile("outFiles/outputFile_251109.root");
 //  TFile *offlineFile = new TFile("outFiles/outputFile_091209.root");
 //  TFile *offlineFile = new TFile("outFiles/outputFile1k.root");
-  TFile *offlineFile = new TFile("outFiles/outputFile1k.root");
+//  TFile *offlineFile = new TFile("outFiles/outputFile100.root");
+  TFile *offlineFile = new TFile("outFiles/outFile240310.root");
   McpTargetDisplay *targetPtr = new McpTargetDisplay(1,offlineFile);
   targetPtr->startEventDisplay();
   

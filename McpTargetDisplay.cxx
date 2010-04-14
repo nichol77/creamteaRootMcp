@@ -25,6 +25,7 @@
 #include "TThread.h"
 #include "TStyle.h"
 #include "TLatex.h"
+#include "TSlider.h"
 #include "TPaveText.h"
 #include <TGClient.h>
 
@@ -58,6 +59,7 @@ McpTargetDisplay::McpTargetDisplay(int offlineMode,TFile *inputFile)
   fMidLeftPave=0;
   fMidMidPave=0;
   fMidRightPave=0;
+
   
 }
 
@@ -400,17 +402,17 @@ int McpTargetDisplay::displayNextEvent()
 
 
 void McpTargetDisplay::drawEventButtons() {
-   TButton *butNext = new TButton("Next ","McpTargetDisplay::Instance()->displayNextEvent();",0.95,0.975,1,1);
+   TButton *butNext = new TButton("Next ","McpTargetDisplay::Instance()->displayNextEvent();",0.95,0.97,1,1);
    butNext->SetTextSize(0.5);
    butNext->SetFillColor(kGreen-10);
    butNext->Draw();
    
 
-   TButton *butPlay = new TButton("Play","McpTargetDisplay::Instance()->startEventPlaying();",0.9,0.95,0.95,1);
+   TButton *butPlay = new TButton("Play","McpTargetDisplay::Instance()->startEventPlaying();",0.95,0.93,1,0.96);
    butPlay->SetTextSize(0.5);
    butPlay->SetFillColor(kGreen-10);
    butPlay->Draw();
-   TButton *butStop = new TButton("Stop","McpTargetDisplay::Instance()->stopEventPlaying();",0.90,0.90,0.95,0.94);
+   TButton *butStop = new TButton("Stop","McpTargetDisplay::Instance()->stopEventPlaying();",0.95,0.9,1,0.93);
    butStop->SetTextSize(0.5);
    butStop->SetFillColor(kRed-10);
    butStop->Draw();
@@ -425,6 +427,12 @@ void McpTargetDisplay::drawEventButtons() {
    fPowerButton->SetTextSize(0.4);
    fPowerButton->SetFillColor(kGray);
    fPowerButton->Draw();
+
+   fThresholdSlider = new TSlider("threshSlider","thresh",0.9,0.9,0.95,1);
+   fThresholdSlider->SetMethod("McpTargetDisplay::Instance()->updateThresholdFromSlider();");
+   fThresholdSlider->SetRange(0,0.2);
+   fThresholdSlider->SetEditable(0);
+   updateThreshold(fTheMcpTarget.getTrigThresh());
 
 }
 
@@ -451,3 +459,26 @@ void McpTargetDisplay::stopEventPlaying()
   fInEventPlayMode=0;
 }
 
+void McpTargetDisplay::updateThresholdFromSlider() 
+{
+  //  std::cout << fThresholdSlider->GetMinimum() << "\t" 
+  //	    << fThresholdSlider->GetMaximum() << "\n";
+
+  //0.2, 1  --> Spans range 0,4095
+  Double_t minVal=fThresholdSlider->GetMinimum();
+  Double_t maxVal=fThresholdSlider->GetMaximum();
+  Double_t range=maxVal-minVal;
+  Double_t dThresh=((maxVal-range)/(1.0-range))*4095;
+  UInt_t thresh=(UInt_t)dThresh;
+  updateThreshold(thresh);
+
+}
+
+void McpTargetDisplay::updateThreshold(UInt_t threshold) 
+{
+  //Threshold thingies
+  char textLabel[180];
+  sprintf(textLabel,"Threshold: %u",threshold);
+  fThresholdSlider->SetToolTipText(textLabel,0);
+  fTheMcpTarget.setTrigThresh(threshold);
+}
