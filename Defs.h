@@ -6,11 +6,12 @@
 #define NUM_TOTAL_CHANNELS    NUM_TARGETS*NUM_CHANNELS //64      
 #define NUM_ROWS              8        // Rows per channel
 #define NUM_COLS              32       // Columns per row
-#define SAMPLES_PER_COL       64       //Amount of values per signal
-#define SAMPLES_PER_ROW       NUM_COLS*NUM_ROWS
+#define SAMPLES_PER_COL        512   //Amount of values per signal //was 64
+//efine SAMPLES_PER_ROW       NUM_COLS*NUM_ROWS
 #define NUM_SAMPLES SAMPLES_PER_COL
 #define DATASIZE       NUM_CHANNELS * NUM_SAMPLES
-#define BUFFERSIZE    4140  //Size of buffer, need 5 more values due to headers and stuff.
+//#define BUFFERSIZE    4140  //Size of buffer, need 5 more values due to headers and stuff.
+#define BUFFERSIZE    32810  //Size of buffer, need 5 more values due to headers and stuff.
 
 //#define VOLTS_PER_COUNT      0.001 * 2.7782   // old value: 0.001 * 0.6184
 #define VOLTS_PER_COUNT      0.001 * 0.6184
@@ -29,7 +30,7 @@
 #define WBIAS_MASK                     0x00000006
 #define TRIG_POLARITY_POS              0x00000007
 #define TRIG_POLARITY_NEG              0x00010007
-#define TERM_MASK                      0x00070008
+#define TERM_MASK                      0x000f0008
 
 
 #define TERM_100_OHMS_SHIFT 18

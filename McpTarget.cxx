@@ -380,10 +380,16 @@ void McpTarget::setTrigThresh(UInt_t value)
     std::cerr << "Running in offline mode can't set trigger threshold\n";
     return;
   }
-  UInt_t dataVal=TRIG_THRESH_MASK;
-  dataVal |= (value&0xffff) << TRIG_THRESH_SHIFT;
-  fTheUsb.sendData(dataVal);
+  UInt_t asicMasks[4]={0x0000,0x4000,0x8000,0xc000};
+
+  for(int asic=0;asic<NUM_TARGETS;asic++) {
+    UInt_t dataVal=TRIG_THRESH_MASK;
+    UInt_t tempValue=value|asicMasks[asic];
+    dataVal |= (tempValue&0xffff) << TRIG_THRESH_SHIFT;
+    fTheUsb.sendData(dataVal);
+  }
   fThresholdValue=value;
+
 }
 
 void McpTarget::setTermValue(Int_t f100, Int_t f1k, Int_t f10k) 
@@ -398,9 +404,9 @@ void McpTarget::setTermValue(Int_t f100, Int_t f1k, Int_t f10k)
   //  dataVal |= ((f1k&0x1) << TERM_1K_OHMS_SHIFT);
   //  dataVal |= ((f10k&0x1) << TERM_10K_OHMS_SHIFT);
   unsigned int dataVal;
-  dataVal = f10k << 16 & TERM_MASK;      //10kohms
-  dataVal = f1k  << 17 & dataVal;//1kohms
-  dataVal = f100 << 18 & dataVal;//100ohms
+  //dataVal = f10k << 16 & TERM_MASK;      //10kohms
+  //dataVal = f1k  << 17 & dataVal;//1kohms
+  //dataVal = f100 << 18 & dataVal;//100ohms
 
 
 

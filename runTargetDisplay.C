@@ -18,7 +18,7 @@ gSystem->Load("libgsl.so");
 
   McpTargetDisplay *displayPtr = new McpTargetDisplay();
   McpTarget *targetPtr = displayPtr->getMcpTargetPointer();
-  targetPtr->setSoftTrigMode(1);
+  targetPtr->setSoftTrigMode(0);
   displayPtr->startEventDisplay();
   
 }
