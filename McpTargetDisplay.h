@@ -54,6 +54,7 @@ class McpTargetDisplay
   int getEventDisplayPlayMode() {return fInEventPlayMode;}
   void setEventDisplayPlayMode(int mode) { fInEventPlayMode=mode;}
   int getEventDisplayPlaySleep() {return fEventPlaySleepMs;}
+  void saveTree() { fTheMcpTarget.saveOutputFile();}
   void drawEventButtons();
   void drawZoomButtons();
   void setFixedRange();

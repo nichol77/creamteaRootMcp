@@ -25,11 +25,11 @@ gSystem->Load("libgsl.so");
   }
   run++;
   {
-    ofstream RunNumFile("theLatestRunNumber.txt");
-    if(RunNumFile) {
-      RunNumFile << run;
+    ofstream RunNumFile2("theLatestRunNumber.txt");
+    if(RunNumFile2) {
+      RunNumFile2 << run << "\n";
     }
-    RunNumFile.close();
+    RunNumFile2.close();
   }
   
   char outName[180];

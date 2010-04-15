@@ -35,6 +35,7 @@ McpTarget::McpTarget(int offlineMode)
   fOutputMode=0;
 
   if(!fOfflineMode) {
+    std::cerr << "Trying to setup something\n";
     if (fTheUsb.createHandles() != stdUSB::SUCCEED) {
       std::cerr << "USB failed to initalize.\n";
       exit(0);
@@ -44,7 +45,7 @@ McpTarget::McpTarget(int offlineMode)
     enablePedestal(false);
     setPedRowCol(0,0);
     setTrigPolarity(false); //Falling edge
-    setWbias(1000); ///< ~1us allegedly
+    setWbias(800); ///< ~1us allegedly
     setTrigThresh(1639); ///< 1.4v
   }
 }
@@ -100,12 +101,21 @@ Int_t McpTarget::justReadBuffer()
 
 void McpTarget::generatePedestals() 
 {
-
+  std::cerr << "Here\n";
   if(fOfflineMode) {
     std::cerr << "Running in offline mode can't generate pedestals\n";
     return;
   }
-  Double_t tempValues[NUM_TARGETS][NUM_CHANNELS][NUM_ROWS][NUM_COLS][SAMPLES_PER_COL]={{{{{0}}}}};
+  Double_t *tempValues[NUM_TARGETS][NUM_CHANNELS][NUM_ROWS][NUM_COLS];
+  for(int chip=0;chip<NUM_TARGETS;chip++) {
+    for(int chan=0;chan<NUM_CHANNELS;chan++) {
+      for(int row=0;row<NUM_ROWS;row++) {
+	for(int col=0;col<NUM_COLS;col++) {
+	  tempValues[chip][chan][row][col]= new Double_t [SAMPLES_PER_COL];
+	}
+      }
+    }
+  }
   Int_t countStuff[NUM_ROWS][NUM_COLS]={{0}};
   
   Int_t row,col;
@@ -162,6 +172,7 @@ void McpTarget::generatePedestals()
 	    }
 	    PedFile << fPedestalValues[chip][chan][row][col][samp] << "\n";
 	  }
+	  delete [] tempValues[chip][chan][row][col];
 	}
       }
     } 
@@ -186,7 +197,7 @@ int McpTarget::readEvent()
     enablePedestal(false);
     setPedRowCol(0,0);
     setTrigPolarity(false); //Falling edge
-    setWbias(1000); ///< ~1us allegedly
+    setWbias(800); ///< ~1us allegedly
     setTrigThresh(1639); ///< 1.4v
   }
 
@@ -244,7 +255,7 @@ void McpTarget::fillVoltageArray(TargetData *targetDataPtr)
 // 	std::cerr << row << "\t" << col << "\t" << NUM_ROWS << "\t"
 // 		  << NUM_COLS << "\n";
 // 	std::cerr << fPedestalValues[chip][chan][row][col][samp] << "\n";
-	value-=fPedestalValues[chip][chan][row][col][samp]; 
+//	value-=fPedestalValues[chip][chan][row][col][samp]; 
 	fVoltBuffer[chip][chan][samp]=value;
 	targetDataPtr->fVoltBuffer[chip][chan][samp]=value;
 	//	exit(0);

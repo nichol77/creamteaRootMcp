@@ -2,6 +2,7 @@ gSystem->Reset();
 
 void loadTargetLibs() { 
 
+  gSystem->Load("libGraf.so");
   gSystem->Load("libusb.so");
   gSystem->Load("libfftw3.so");
   gSystem->Load("libMathMore.so");

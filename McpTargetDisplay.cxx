@@ -46,7 +46,7 @@ McpTargetDisplay::McpTargetDisplay(int offlineMode,TFile *inputFile)
   fMcpTargetMainPad=0;
   fView=1;
   fAutoScaleMode=1;
-  fAbsMaxScale=2048;
+  fAbsMaxScale=8096;
   fMinScale=-1000;
   fMaxScale=1000;
 
@@ -436,6 +436,14 @@ int McpTargetDisplay::displayNextEvent()
 
 
 void McpTargetDisplay::drawEventButtons() {
+
+   TButton *butSave = new TButton("Save ","McpTargetDisplay::Instance()->saveTree();",0,0.97,0.05,1);
+   butSave->SetTextSize(0.5);
+   butSave->SetFillColor(kBlue-3);
+   butSave->Draw();
+   
+
+
    TButton *butNext = new TButton("Next ","McpTargetDisplay::Instance()->displayNextEvent();",0.95,0.97,1,1);
    butNext->SetTextSize(0.5);
    butNext->SetFillColor(kGreen-10);

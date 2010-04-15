@@ -12,7 +12,7 @@ class RawTargetData: public TObject
   ~RawTargetData();  
 
   unsigned int raw[BUFFERSIZE]; 
-  ClassDef(RawTargetData,2); //Need to update to 2 when switch to 64
+  ClassDef(RawTargetData,3); //Need to update to 2 when switch to 64
 };
 
 #endif /* RAWTARGETDATA_H */
