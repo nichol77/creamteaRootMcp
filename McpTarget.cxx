@@ -10,7 +10,6 @@
 #include "stdUSB.h"
 #include "McpPci.h"
 
-//#define READOUT_MCP_CPCI 1
 
 #ifdef READOUT_MCP_CPCI
 McpPci fThePci;

@@ -24,7 +24,7 @@ USE_FFT_TOOLS=1
 
 ifdef USE_FFT_TOOLS
 FFTLIBS = -lRootFftwWrapper -lfftw3
-FFTFLAG = -DUSE_FFT_TOOLS
+FFTFLAG = -DUSE_FFT_TOOLS 
 else
 FFTLIBS =
 FFTFLAG =
@@ -35,7 +35,8 @@ SYSLIBS +=-lprofiler
 endif
 
 #Generic and Site Specific Flags
-CXXFLAGS     += $(ROOTCFLAGS) $(FFTFLAG) $(SYSINCLUDES) $(INC_RJN_UTIL)
+#Toggle between MCP_PCI and USB using the READOUT_MCP_CPCI flag
+CXXFLAGS     += $(ROOTCFLAGS) $(FFTFLAG) $(SYSINCLUDES) $(INC_RJN_UTIL) -DREADOUT_MCP_CPCI 
 LDFLAGS      += -g $(ROOTLDFLAGS) 
 
 LIBS          = $(ROOTLIBS) -lMathMore -lMinuit $(SYSLIBS) $(LD_RJN_UTIL) $(FFTLIBS) -lusb
