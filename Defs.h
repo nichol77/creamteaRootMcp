@@ -3,7 +3,8 @@
 
 #define NUM_TARGETS           4        // Number of target chips
 #define NUM_CHANNELS          16       // Number of channels
-#define NUM_TOTAL_CHANNELS    NUM_TARGETS*NUM_CHANNELS //64      
+#define NUM_TOTAL_CHANNELS    NUM_TARGETS*NUM_CHANNELS //64   
+#define NUM_PIXELS            64 //64   
 #define NUM_ROWS              8        // Rows per channel
 #define NUM_COLS              32       // Columns per row
 #define SAMPLES_PER_COL        512   //Amount of values per signal //was 64

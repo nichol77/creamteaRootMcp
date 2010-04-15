@@ -31,6 +31,21 @@
 
 using namespace std;
 
+
+//Using 0-63 numbering
+Int_t chanToPmtPixel[64]={7,8,6,9,5,10,4,11,3,12,2,
+			  13,1,14,0,15,23,24,22,25,21,
+			  26,20,27,19,28,18,29,17,30,16,
+			  31,32,47,33,46,34,45,35,44,36,
+			  43,37,42,38,41,39,40,48,63,49,
+			  62,50,61,51,60,52,59,53,58,54,
+			  57,55,56};
+
+Int_t pmtPixelToChan[64]={14,12,10,8,6,4,2,0,1,3,5,7,9,11,13,15,30,28,26,24,22,20,18,16,17,19,21,23,25,27,29,31,32,34,36,38,40,42,44,46,47,45,43,41,39,37,35,33,48,50,52,54,56,58,60,62,63,61,59,57,55,53,51,49};
+
+
+
+
 McpTargetDisplay*  McpTargetDisplay::fgInstance = 0;
 //Leave these as global variables for now
 
@@ -324,24 +339,25 @@ void McpTargetDisplay::refreshEventDisplay()
    Double_t maxTime=NUM_SAMPLES;
    //   Double_t minFreq=0;
    //   Double_t maxFreq=500;
-   for(int chan=0;chan<NUM_TOTAL_CHANNELS;chan++) {
-     sprintf(graphName,"Channel %d",chan+1);
-     if(gr[chan]) delete gr[chan];
-     if(wv[chan]) delete wv[chan];
-     if(fft[chan]) delete fft[chan];
-     gr[chan] = fTheTargetDataPtr->getChannel(chan);
-     wv[chan] = new WaveformGraph(gr[chan]);
-     wv[chan]->setChannel(chan);
-     wv[chan]->SetLineColor(9);
-     fft[chan] = (wv[chan]->getFFT());
-     fft[chan]->SetLineColor(9);
+   for(int pixel=0;pixel<NUM_TOTAL_CHANNELS;pixel++) {
+     Int_t chan=pmtPixelToChan[pixel];
+     sprintf(graphName,"Pixel %d",pixel+1);
+     if(gr[pixel]) delete gr[pixel];
+     if(wv[pixel]) delete wv[pixel];
+     if(fft[pixel]) delete fft[pixel];
+     gr[pixel] = fTheTargetDataPtr->getChannel(chan-1);
+     wv[pixel] = new WaveformGraph(gr[pixel]);
+     wv[pixel]->setChannel(pixel);
+     wv[pixel]->SetLineColor(9);
+     fft[pixel] = (wv[pixel]->getFFT());
+     fft[pixel]->SetLineColor(9);
 
-     Double_t sqVal=FFTtools::getPeakSqVal(wv[chan]);
-     //     std::cout << chan << "\t" << sqVal << "\n"; 
+     Double_t sqVal=FFTtools::getPeakSqVal(wv[pixel]);
+     //     std::cout << pixel << "\t" << sqVal << "\n"; 
      if(sqVal>maxVal)
        maxVal=sqVal;
-     wv[chan]->SetTitle(graphName);
-     fft[chan]->SetTitle(graphName);
+     wv[pixel]->SetTitle(graphName);
+     fft[pixel]->SetTitle(graphName);
      
 
    }
@@ -350,17 +366,17 @@ void McpTargetDisplay::refreshEventDisplay()
    gStyle->SetTitleSize(0.1,"x");
    maxVal=TMath::Sqrt(maxVal);
    if(maxVal>4000) maxVal=4000;
-   for(int chan=0;chan<NUM_TOTAL_CHANNELS;chan++) {
-     padGraphs->cd(chan+1);
+   for(int pixel=0;pixel<NUM_TOTAL_CHANNELS;pixel++) {
+     padGraphs->cd(pixel+1);
      if(!padsDrawn) {
-       if((chan+1)%8==0)
+       if((pixel+1)%8==0)
 	 gPad->SetRightMargin(0.01);
-       if(chan>=56) {
+       if(pixel>=56) {
 	 gPad->SetBottomMargin(0.2);       
        }
      }
-     wv[chan]->SetMaximum(maxVal*1.2);
-     wv[chan]->SetMinimum(-1.2*maxVal);
+     wv[pixel]->SetMaximum(maxVal*1.2);
+     wv[pixel]->SetMinimum(-1.2*maxVal);
      
      if(fView==1)  {
        if(!padsDrawn) {
@@ -369,7 +385,7 @@ void McpTargetDisplay::refreshEventDisplay()
 	   framey = gPad->DrawFrame(minTime,-1.2*maxVal,maxTime,1.2*maxVal);
 	 else 
 	   framey = gPad->DrawFrame(minTime,fMinScale,maxTime,fMaxScale);
-	 if(chan>=56) {
+	 if(pixel>=56) {
 	   framey->GetYaxis()->SetLabelSize(0.08);
 	 }
 	 framey->SetXTitle("Time (ns)");       
@@ -388,10 +404,10 @@ void McpTargetDisplay::refreshEventDisplay()
 	 }
 	   
        }
-       wv[chan]->Draw("l");
+       wv[pixel]->Draw("l");
      }
      if(fView==2)
-       fft[chan]->Draw("al");
+       fft[pixel]->Draw("al");
      
 
    }

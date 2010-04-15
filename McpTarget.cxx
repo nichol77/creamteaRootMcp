@@ -8,8 +8,15 @@
 #include "TTree.h"
 
 #include "stdUSB.h"
+#include "McpPci.h"
 
+//#define READOUT_MCP_CPCI 1
+
+#ifdef READOUT_MCP_CPCI
+McpPci fThePci;
+#else
 stdUSB fTheUsb;
+#endif
 
 McpTarget::McpTarget(int offlineMode) 
   :fOfflineMode(offlineMode),fExtTrigMode(0),fEventNumber(0),fNumPedEvents(100)
@@ -36,10 +43,15 @@ McpTarget::McpTarget(int offlineMode)
 
   if(!fOfflineMode) {
     std::cerr << "Trying to setup something\n";
+#ifdef READOUT_MCP_CPCI
+#else
+    
     if (fTheUsb.createHandles() != stdUSB::SUCCEED) {
       std::cerr << "USB failed to initalize.\n";
       exit(0);
     }
+#endif
+    
     useSyncUsb(0);
     setTermValue(0,1,0);
     enablePedestal(false);
@@ -76,11 +88,20 @@ Int_t McpTarget::justReadBuffer()
   memset(fReadoutBuffer,0,BUFFERSIZE*sizeof(unsigned short));
 
   int bytesRead=0;
+#ifdef READOUT_MCP_CPCI
+  bool retVal=fThePci.readData(fReadoutBuffer, BUFFERSIZE, &bytesRead);
+  if(retVal!=stdUSB::SUCCEED) { 
+    sleep(1);
+    retVal=fThePci.readData(fReadoutBuffer, BUFFERSIZE, &bytesRead);
+  }
+
+#else
   bool retVal=fTheUsb.readData(fReadoutBuffer, BUFFERSIZE, &bytesRead);
   if(retVal!=stdUSB::SUCCEED) { 
     sleep(1);
     retVal=fTheUsb.readData(fReadoutBuffer, BUFFERSIZE, &bytesRead);
   }
+#endif
 
   if(fDumpRawHexData) {
     ofstream HexDump("eventHexDump.txt");
@@ -349,7 +370,11 @@ void McpTarget::setPedRowCol(Int_t row, Int_t col)
   dataVal |= (row << PED_ROW_SHIFT);
   dataVal |= (col << PED_COL_SHIFT);
 
+#ifdef READOUT_MCP_CPCI
+  fThePci.sendData(dataVal);
+#else
   fTheUsb.sendData(dataVal); 
+#endif
 }
 
 void McpTarget::enablePedestal(Int_t flag)
@@ -361,12 +386,22 @@ void McpTarget::enablePedestal(Int_t flag)
   }
 
 
+
+#ifdef READOUT_MCP_CPCI
+  if(flag==1) {
+    fThePci.sendData(ENABLE_PED_MASK);
+  }
+  else {
+    fThePci.sendData(DISABLE_PED_MASK);
+  }
+#else
   if(flag==1) {
     fTheUsb.sendData(ENABLE_PED_MASK);
   }
   else {
     fTheUsb.sendData(DISABLE_PED_MASK);
   }
+#endif
 }
 
 
@@ -380,7 +415,11 @@ void McpTarget::setWbias(UInt_t value)
   UInt_t dataVal = WBIAS_MASK;
   dataVal |= (value << WBIAS_SHIFT);
 
+#ifdef READOUT_MCP_CPCI
+  fThePci.sendData(dataVal);
+#else
   fTheUsb.sendData(dataVal);
+#endif
 }
 
 
@@ -397,7 +436,12 @@ void McpTarget::setTrigThresh(UInt_t value)
     UInt_t dataVal=TRIG_THRESH_MASK;
     UInt_t tempValue=value|asicMasks[asic];
     dataVal |= (tempValue&0xffff) << TRIG_THRESH_SHIFT;
+
+#ifdef READOUT_MCP_CPCI
+    fThePci.sendData(dataVal);
+#else
     fTheUsb.sendData(dataVal);
+#endif
   }
   fThresholdValue=value;
 
@@ -422,8 +466,13 @@ void McpTarget::setTermValue(Int_t f100, Int_t f1k, Int_t f10k)
 
 
 
+#ifdef READOUT_MCP_CPCI
+  fThePci.sendData(dataVal);
+
+#else
   fTheUsb.sendData(dataVal);
-  fTheUsb.freeHandles();
+  //  fTheUsb.freeHandles();
+#endif
 
 }
 
@@ -436,12 +485,22 @@ void McpTarget::setTrigPolarity(Int_t flag)
     return;
   }
 
+#ifdef READOUT_MCP_CPCI
+  if(flag==1) {
+    fThePci.sendData(TRIG_POLARITY_NEG);
+  }
+  else {
+    fThePci.sendData(TRIG_POLARITY_POS);
+  }
+
+#else
   if(flag==1) {
     fTheUsb.sendData(TRIG_POLARITY_NEG);
   }
   else {
     fTheUsb.sendData(TRIG_POLARITY_POS);
   }
+#endif
 }
 
 
@@ -453,12 +512,23 @@ void McpTarget:: useSyncUsb(Int_t flag)
     return;
   }
 
+
+#ifdef READOUT_MCP_CPCI
+  if(flag==1) {
+    fThePci.sendData(ENABLE_SYNC_USB_MASK);
+  }
+  else {
+    fThePci.sendData(DISABLE_SYNC_USB_MASK);
+  }
+
+#else
   if(flag==1) {
     fTheUsb.sendData(ENABLE_SYNC_USB_MASK);
   }
   else {
     fTheUsb.sendData(DISABLE_SYNC_USB_MASK);
   }
+#endif
 }
 
 void McpTarget:: sendSoftTrig()
@@ -469,7 +539,11 @@ void McpTarget:: sendSoftTrig()
     return;
   }
 
+#ifdef READOUT_MCP_CPCI
+  fThePci.sendData(SOFT_TRIG_MASK);
+#else
   fTheUsb.sendData(SOFT_TRIG_MASK);
+#endif
 }
 
 
@@ -507,7 +581,13 @@ void McpTarget::rawSendInt(unsigned int value)
     std::cerr << "Running in offline mode can't sent int\n";
     return;
   }
+
+#ifdef READOUT_MCP_CPCI
+
+  bool retVal=fThePci.sendData(value);
+#else
   bool retVal=fTheUsb.sendData(value);
+#endif
   std::cout << "Got " << retVal << " for sending " << value << "\n";
 }
 
@@ -520,7 +600,11 @@ void McpTarget::rawReadInts(int numInts, unsigned short buffer[])
     return;
   }
   int numRead=0;
+#ifdef READOUT_MCP_CPCI
+  int retVal=fThePci.readData(buffer,numInts,&numRead);
+#else
   int retVal=fTheUsb.readData(buffer,numInts,&numRead);
+#endif
   std::cout << "Got " << retVal << " for reading " << numRead 
 	    << " of " << numInts << " values " << "\n";
   if(numRead>0) {
