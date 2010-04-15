@@ -7,6 +7,7 @@
 #define NUM_ROWS              8        // Rows per channel
 #define NUM_COLS              32       // Columns per row
 #define SAMPLES_PER_COL        512   //Amount of values per signal //was 64
+//#define SAMPLES_PER_COL        64   //Amount of values per signal //was 64
 //efine SAMPLES_PER_ROW       NUM_COLS*NUM_ROWS
 #define NUM_SAMPLES SAMPLES_PER_COL
 #define DATASIZE       NUM_CHANNELS * NUM_SAMPLES

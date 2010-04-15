@@ -50,10 +50,13 @@ class McpTargetDisplay
   int displayNextEvent(); // all the
   void refreshEventDisplay(); // same
   void toggleView(Int_t view) {fView=view;}
+  void toggleAutoscale();
   int getEventDisplayPlayMode() {return fInEventPlayMode;}
   void setEventDisplayPlayMode(int mode) { fInEventPlayMode=mode;}
   int getEventDisplayPlaySleep() {return fEventPlaySleepMs;}
   void drawEventButtons();
+  void drawZoomButtons();
+  void setFixedRange();
 
   McpTarget *getMcpTargetPointer() {return &(fTheMcpTarget);}
 
@@ -76,11 +79,17 @@ class McpTargetDisplay
    TButton *fWaveformButton;
    TButton *fPowerButton;
 
+   TButton *fZoomButton;
+   TSlider *fZoomSlider;
    TSlider *fThresholdSlider;
 
    Int_t fInEventPlayMode;
    Int_t fEventPlaySleepMs;
    Int_t fView; //1 is waveforms, 2 is FFTs
+   Int_t fAutoScaleMode; //1 is autoscale, 0 is fixed scale
+   Int_t fMinScale; 
+   Int_t fMaxScale;
+   Int_t fAbsMaxScale;
 
    McpTarget fTheMcpTarget;
    TargetData *fTheTargetDataPtr;

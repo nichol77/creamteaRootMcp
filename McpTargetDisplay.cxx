@@ -45,6 +45,10 @@ McpTargetDisplay::McpTargetDisplay(int offlineMode,TFile *inputFile)
   fMcpTargetEventInfoPad=0;
   fMcpTargetMainPad=0;
   fView=1;
+  fAutoScaleMode=1;
+  fAbsMaxScale=2048;
+  fMinScale=-1000;
+  fMaxScale=1000;
 
   fTheOfflineFile=0;
   fTheOfflineTree=0;
@@ -286,32 +290,38 @@ void McpTargetDisplay::refreshEventDisplay()
    static TGraph *fft[NUM_TOTAL_CHANNELS]={0};
 
    //For now lets be lazy
-   fMcpTargetMainPad->Clear();
-   fMcpTargetMainPad->cd();
-   fMcpTargetMainPad->SetBottomMargin(0);
-   TPad *padGraphs = new TPad("padGraphs","padGraphs",0.05,0.,1,0.95);
-   padGraphs->Draw();
-   padGraphs->Divide(8,8,0,0);
-
-   //Now add labels
-   TLatex texy;
-   texy.SetTextSize(0.03); 
-   texy.SetTextAlign(12);  
-   for(int column=0;column<8;column++) {
-     sprintf(textLabel,"%d",1+column);
-     texy.DrawTextNDC((column+1)*0.115,0.97,textLabel);
+   static int padsDrawn=0;
+   static TPad *padGraphs=0;
+   if(fView==2) 
+     padsDrawn=0;
+   if(!padsDrawn) {
+     fMcpTargetMainPad->Clear();
+     fMcpTargetMainPad->cd();
+     fMcpTargetMainPad->SetBottomMargin(0);
+     drawZoomButtons();
+     padGraphs= new TPad("padGraphs","padGraphs",0.05,0.,0.95,0.95);
+     padGraphs->Draw();
+     padGraphs->Divide(8,8,0,0);
+     
+     //Now add labels
+     TLatex texy;
+     texy.SetTextSize(0.03); 
+     texy.SetTextAlign(12);  
+     for(int column=0;column<8;column++) {
+       sprintf(textLabel,"%d",1+column);
+       texy.DrawTextNDC((column+1)*0.115,0.97,textLabel);
+     }
+     for(int row=0;row<8;row++) {
+       sprintf(textLabel,"%d",1+(8*row));
+       texy.DrawTextNDC(0.02,1-((row+1)*0.114),textLabel);
+     }
    }
-   for(int row=0;row<8;row++) {
-     sprintf(textLabel,"%d",1+(8*row));
-     texy.DrawTextNDC(0.02,1-((row+1)*0.114),textLabel);
-  }
-   
 
    //   fMcpTargetMainPad->Divide(8,8,0,0);
    Double_t maxVal=0;
    char graphName[180];
    Double_t minTime=0;
-   Double_t maxTime=64;
+   Double_t maxTime=NUM_SAMPLES;
    //   Double_t minFreq=0;
    //   Double_t maxFreq=500;
    for(int chan=0;chan<NUM_TOTAL_CHANNELS;chan++) {
@@ -342,19 +352,42 @@ void McpTargetDisplay::refreshEventDisplay()
    if(maxVal>4000) maxVal=4000;
    for(int chan=0;chan<NUM_TOTAL_CHANNELS;chan++) {
      padGraphs->cd(chan+1);
-     if((chan+1)%8==0)
-       gPad->SetRightMargin(0.01);
-     if(chan>=56) {
-       gPad->SetBottomMargin(0.2);       
+     if(!padsDrawn) {
+       if((chan+1)%8==0)
+	 gPad->SetRightMargin(0.01);
+       if(chan>=56) {
+	 gPad->SetBottomMargin(0.2);       
+       }
      }
      wv[chan]->SetMaximum(maxVal*1.2);
      wv[chan]->SetMinimum(-1.2*maxVal);
+     
      if(fView==1)  {
-       TH1F *framey = gPad->DrawFrame(minTime,-1.2*maxVal,maxTime,1.2*maxVal);
-       if(chan>=56) {
-	 framey->GetYaxis()->SetLabelSize(0.08);
+       if(!padsDrawn) {
+	 TH1F *framey =0;
+	 if(fAutoScaleMode) 
+	   framey = gPad->DrawFrame(minTime,-1.2*maxVal,maxTime,1.2*maxVal);
+	 else 
+	   framey = gPad->DrawFrame(minTime,fMinScale,maxTime,fMaxScale);
+	 if(chan>=56) {
+	   framey->GetYaxis()->SetLabelSize(0.08);
+	 }
+	 framey->SetXTitle("Time (ns)");       
        }
-       framey->SetXTitle("Time (ns)");       
+       else {
+	 TList *listy = gPad->GetListOfPrimitives();
+	 for(int i=0;i<listy->GetSize();i++) {
+	   TObject *fred = listy->At(i);
+	   TH1F *tempHist = (TH1F*) fred;
+	   if(tempHist->InheritsFrom("TH1")) {
+	     if(fAutoScaleMode)
+	       tempHist->GetYaxis()->SetRangeUser(-1.2*maxVal,1.2*maxVal);
+	     else
+	       tempHist->GetYaxis()->SetRangeUser(fMinScale,fMaxScale);
+	   }
+	 }
+	   
+       }
        wv[chan]->Draw("l");
      }
      if(fView==2)
@@ -363,6 +396,7 @@ void McpTargetDisplay::refreshEventDisplay()
 
    }
 
+   padsDrawn=1;
   
   fMcpTargetCanvas->Update();
 }
@@ -438,6 +472,24 @@ void McpTargetDisplay::drawEventButtons() {
 
 
 
+void McpTargetDisplay::drawZoomButtons() {
+
+
+   //NEW BUTTONS
+   fZoomButton = new TButton("Autoscale","McpTargetDisplay::Instance()->toggleAutoscale(); McpTargetDisplay::Instance()->refreshEventDisplay();",0.95,0.9,1,0.95);
+   fZoomButton->SetTextSize(0.3);
+   fZoomButton->SetFillColor(kGray+3);
+   fZoomButton->Draw();
+
+   fZoomSlider = new TSlider("zoomSlider","zoom",0.95,0.05,1,0.85);
+   fZoomSlider->SetMethod("McpTargetDisplay::Instance()->setFixedRange(); McpTargetDisplay::Instance()->refreshEventDisplay();");
+   fZoomSlider->SetRange(0,1);
+   fZoomSlider->SetEditable(0);
+
+}
+
+
+
 void McpTargetDisplay::startEventPlaying()
 {
 
@@ -481,4 +533,33 @@ void McpTargetDisplay::updateThreshold(UInt_t threshold)
   sprintf(textLabel,"Threshold: %u",threshold);
   fThresholdSlider->SetToolTipText(textLabel,0);
   fTheMcpTarget.setTrigThresh(threshold);
+}
+
+void McpTargetDisplay::toggleAutoscale() 
+{ 
+  fAutoScaleMode=1-fAutoScaleMode;
+  if(fAutoScaleMode) {
+    fZoomButton->SetFillColor(kGray+3);
+    fZoomButton->Modified();
+  }
+  else {
+    fZoomButton->SetFillColor(kGray);
+    fZoomButton->Modified();
+  }
+    
+}
+
+void McpTargetDisplay::setFixedRange() 
+{
+  //  std::cout << fThresholdSlider->GetMinimum() << "\t" 
+  //	    << fThresholdSlider->GetMaximum() << "\n";
+
+  //0.2, 1  --> Spans range 0,4095
+  Double_t minVal=fZoomSlider->GetMinimum();
+  Double_t maxVal=fZoomSlider->GetMaximum();
+  
+  
+  fMinScale=(minVal-0.5)*fAbsMaxScale;
+  fMaxScale=(maxVal-0.5)*fAbsMaxScale;
+  
 }

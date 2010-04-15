@@ -46,7 +46,7 @@ class TargetData: public RawTargetData
  private:
   void unpackMemAddrSpace();
   void unpackFeedback();
-  ClassDef(TargetData,1);
+  ClassDef(TargetData,2);
 };
 
 #endif /* TARGETDATA_H */
