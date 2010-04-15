@@ -12,8 +12,9 @@
 //McpTarget Display Includes
 #include "McpTargetDisplay.h"
 #include "WaveformGraph.h"
+#ifdef USE_FFT_TOOLS
 #include "FFTtools.h"
-
+#endif
 //ROOT Includes
 #include "TROOT.h"
 #include "TCanvas.h"
@@ -352,7 +353,13 @@ void McpTargetDisplay::refreshEventDisplay()
      fft[pixel] = (wv[pixel]->getFFT());
      fft[pixel]->SetLineColor(9);
 
-     Double_t sqVal=FFTtools::getPeakSqVal(wv[pixel]);
+     //     Double_t sqVal=FFTtools::getPeakSqVal(wv[pixel]);
+     Double_t *yVals=wv[pixel]->GetY();
+     Double_t sqVal=0;
+     for(int i=0;i<wv[pixel]->GetN();i++) {
+       Double_t tempVal=yVals[i]*yVals[i];
+       if(sqVal<tempVal) sqVal=tempVal;
+     }
      //     std::cout << pixel << "\t" << sqVal << "\n"; 
      if(sqVal>maxVal)
        maxVal=sqVal;

@@ -7,8 +7,9 @@
 #include <iostream>
 using namespace std;
 
+#ifdef USE_FFT_TOOLS
 #include "FFTtools.h"
-
+#endif
 
 ClassImp(WaveformGraph);
 
@@ -143,6 +144,9 @@ void WaveformGraph::DrawFFT()
 
 TGraph *WaveformGraph::getFFT()
 {
+  #ifdef USE_FFT_TOOLS
   TGraph *grFFT = FFTtools::makePowerSpectrumMilliVoltsNanoSecondsdB(this);
   return grFFT;
+  #endif
+  return NULL;
 }
