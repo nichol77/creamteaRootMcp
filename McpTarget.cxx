@@ -255,7 +255,7 @@ void McpTarget::fillVoltageArray(TargetData *targetDataPtr)
 // 	std::cerr << row << "\t" << col << "\t" << NUM_ROWS << "\t"
 // 		  << NUM_COLS << "\n";
 // 	std::cerr << fPedestalValues[chip][chan][row][col][samp] << "\n";
-//	value-=fPedestalValues[chip][chan][row][col][samp]; 
+	value-=fPedestalValues[chip][chan][row][col][samp]; 
 	fVoltBuffer[chip][chan][samp]=value;
 	targetDataPtr->fVoltBuffer[chip][chan][samp]=value;
 	//	exit(0);

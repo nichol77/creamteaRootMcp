@@ -15,6 +15,7 @@ void runPedestal() {
 
 //   TChain *fred=0; //Will this work?
    McpTarget *myTarget = new McpTarget();
+   myTarget->setNumPedEvents(1000);
    myTarget->generatePedestals();
   
 }

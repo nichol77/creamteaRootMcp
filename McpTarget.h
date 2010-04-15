@@ -28,6 +28,7 @@ class McpTarget
   void setDumpHexData(int value) {fDumpRawHexData=value;}
   void rawSendInt(unsigned int value);
   void rawReadInts(int numInts, unsigned short buffer[]);
+  void setNumPedEvents(int numEvents) {fNumPedEvents=numEvents;}
   void generatePedestals();
   void loadPedestal();
   void loadDnlLookUpTable();

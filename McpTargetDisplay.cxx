@@ -46,9 +46,9 @@ McpTargetDisplay::McpTargetDisplay(int offlineMode,TFile *inputFile)
   fMcpTargetMainPad=0;
   fView=1;
   fAutoScaleMode=1;
-  fAbsMaxScale=8096;
-  fMinScale=-1000;
-  fMaxScale=1000;
+  fAbsMaxScale=2096;
+  fMinScale=-100;
+  fMaxScale=100;
 
   fTheOfflineFile=0;
   fTheOfflineTree=0;
