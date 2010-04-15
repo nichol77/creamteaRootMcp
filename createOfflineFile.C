@@ -16,7 +16,25 @@ void createOfflineFile() {
   std::cout <<"\tMcpTarget *myTarget = new McpTarget();\n";
   std::cout << "Do something\n";
   McpTarget *myTarget = new McpTarget();
-  myTarget->openOutputFile("outputFile.root");
+  Int_t run=0;
+  {
+    ifstream RunNumFile("theLatestRunNumber.txt");
+    if(RunNumFile) {
+      RunNumFile >> run;
+    }
+    RunNumFile.close();
+  }
+  run++;
+  {
+    ofstream RunNumFile("theLatestRunNumber.txt");
+    if(RunNumFile) {
+      RunNumFile << run;
+    }
+    RunNumFile.close();
+  }    
+  char outName[180];
+  sprintf(outName,"data/outputFile%d.root",run);  
+  myTarget->openOutputFile();
   for(int i=0;i<1000;i++) {
     std::cerr << "*";
     myTarget->sendSoftTrig();
