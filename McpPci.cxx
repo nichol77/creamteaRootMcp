@@ -67,17 +67,23 @@ bool McpPci::sendData(unsigned int data)
 bool McpPci::readData(unsigned short * pData, int length, int* lread)
 {
   if(!fTheFd) createHandles();
+  static  unsigned int bigBuffer[100000];
+  int newLength = length + 40;
+  int startWord = 1;
   int retval;  
   retval = 0;
   while (retval <= 0) {    
-    retval = read(fTheFd, pData, sizeof(unsigned int)*length);
+    retval = read(fTheFd, bigBuffer, sizeof(unsigned int)*newLength);
     if (retval < 0) {      
       if (errno != EAGAIN) {	
 	perror("Error reading:");	
 	return FAILED;
       } 
     }
-    *lread=retval;
+    *lread=length;
+    for(int i=0;i<length;i++) {
+      pData[i]=bigBuffer[i+startWord]&0xffffffff;
+    }
   }
   return SUCCEED;
 }

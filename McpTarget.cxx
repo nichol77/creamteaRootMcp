@@ -7,8 +7,11 @@
 #include "TFile.h"
 #include "TTree.h"
 
-#include "stdUSB.h"
+
 #include "McpPci.h"
+#ifndef READOUT_MCP_CPCI
+#include "stdUSB.h"
+#endif
 
 
 #ifdef READOUT_MCP_CPCI
@@ -89,9 +92,11 @@ Int_t McpTarget::justReadBuffer()
   int bytesRead=0;
 #ifdef READOUT_MCP_CPCI
   bool retVal=fThePci.readData(fReadoutBuffer, BUFFERSIZE, &bytesRead);
+  fThePci.sendData(CLEAR_EVENT_CPCI_BOARD_MASK);
   if(retVal!=true) { 
     sleep(1);
     retVal=fThePci.readData(fReadoutBuffer, BUFFERSIZE, &bytesRead);
+    fThePci.sendData(CLEAR_EVENT_CPCI_BOARD_MASK);
   }
 
 #else
@@ -153,7 +158,9 @@ void McpTarget::generatePedestals()
 	//Send software trigger
 	std::cerr << "*";
 	sendSoftTrig();
+#ifndef READOUT_MCP_CPCI
 	usleep(1000);
+#endif
 	Int_t retVal=justReadBuffer();
 	if(retVal<0) continue;
 	//Now unpack the data into a more useful structure
@@ -161,7 +168,7 @@ void McpTarget::generatePedestals()
 	RawTargetData rawTargetData(this->fReadoutBuffer);
 	fTargetDataPtr=&targetData;
 	fRawTargetDataPtr=&rawTargetData;
-	pedTree->Fill();	
+	//	pedTree->Fill();	
 	countStuff[row][col]++;
 	for(int chip=0;chip<NUM_TARGETS;chip++) {
 	  for(int chan=0;chan<NUM_CHANNELS;chan++) {
@@ -601,6 +608,7 @@ void McpTarget::rawReadInts(int numInts, unsigned short buffer[])
   int numRead=0;
 #ifdef READOUT_MCP_CPCI
   int retVal=fThePci.readData(buffer,numInts,&numRead);
+  fThePci.sendData(CLEAR_EVENT_CPCI_BOARD_MASK);
 #else
   int retVal=fTheUsb.readData(buffer,numInts,&numRead);
 #endif

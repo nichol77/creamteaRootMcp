@@ -34,19 +34,28 @@ ifdef USE_GOOGLE_PROFILER
 SYSLIBS +=-lprofiler
 endif
 
+
 #Generic and Site Specific Flags
 #Toggle between MCP_PCI and USB using the READOUT_MCP_CPCI flag
-CXXFLAGS     += $(ROOTCFLAGS) $(FFTFLAG) $(SYSINCLUDES) $(INC_RJN_UTIL) -DREADOUT_MCP_CPCI 
+CXXFLAGS     += $(ROOTCFLAGS) $(FFTFLAG) $(SYSINCLUDES) $(INC_RJN_UTIL) 
 LDFLAGS      += -g $(ROOTLDFLAGS) 
 
-LIBS          = $(ROOTLIBS) -lMinuit $(SYSLIBS) $(LD_RJN_UTIL) $(FFTLIBS) -lusb
+LIBS          = $(ROOTLIBS) -lMinuit $(SYSLIBS) $(LD_RJN_UTIL) $(FFTLIBS)
 GLIBS         = $(ROOTGLIBS) $(SYSLIBS)
 
 #Now the bits we're actually compiling
 ROOT_LIBRARY = libMcpTargetRoot.${DLLSUF}
-LIB_OBJS =  McpTarget.o McpTargetDisplay.o WaveformGraph.o FFTGraph.o stdUSBl.o TargetData.o RawTargetData.o McpPci.o targetDict.o
+LIB_OBJS =  McpTarget.o McpTargetDisplay.o WaveformGraph.o FFTGraph.o  TargetData.o RawTargetData.o McpPci.o targetDict.o
 CLASS_HEADERS = McpTarget.h McpTargetDisplay.h WaveformGraph.h FFTGraph.h TargetData.h RawTargetData.h McpPci.h
 
+
+
+ifdef USE_USB_READOUT
+LIBS +=  -lusb
+LIB_OBJS += stdUSBl.o
+else
+CXXFLAGS += -DREADOUT_MCP_CPCI 
+endif
 
 all : $(ROOT_LIBRARY)
 
