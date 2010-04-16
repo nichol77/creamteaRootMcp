@@ -45,7 +45,7 @@ McpTarget::McpTarget(int offlineMode)
 #ifdef READOUT_MCP_CPCI
 #else
     
-    if (fTheUsb.createHandles() != stdUSB::SUCCEED) {
+    if (fTheUsb.createHandles() != true) {
       std::cerr << "USB failed to initalize.\n";
       exit(0);
     }
@@ -89,14 +89,14 @@ Int_t McpTarget::justReadBuffer()
   int bytesRead=0;
 #ifdef READOUT_MCP_CPCI
   bool retVal=fThePci.readData(fReadoutBuffer, BUFFERSIZE, &bytesRead);
-  if(retVal!=stdUSB::SUCCEED) { 
+  if(retVal!=true) { 
     sleep(1);
     retVal=fThePci.readData(fReadoutBuffer, BUFFERSIZE, &bytesRead);
   }
 
 #else
   bool retVal=fTheUsb.readData(fReadoutBuffer, BUFFERSIZE, &bytesRead);
-  if(retVal!=stdUSB::SUCCEED) { 
+  if(retVal!=true) { 
     sleep(1);
     retVal=fTheUsb.readData(fReadoutBuffer, BUFFERSIZE, &bytesRead);
   }

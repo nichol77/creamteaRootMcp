@@ -20,7 +20,7 @@ RJN_UTIL_INC_DIR=/usr/local/include
 endif
 
 #Toggles the FFT functions on and off
-USE_FFT_TOOLS=0
+#USE_FFT_TOOLS=0
 
 ifdef USE_FFT_TOOLS
 FFTLIBS = -lRootFftwWrapper -lfftw3

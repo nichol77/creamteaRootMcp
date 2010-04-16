@@ -13,8 +13,11 @@
 #define NUM_SAMPLES SAMPLES_PER_COL
 #define DATASIZE       NUM_CHANNELS * NUM_SAMPLES
 //#define BUFFERSIZE    4140  //Size of buffer, need 5 more values due to headers and stuff.
-#define BUFFERSIZE    32810  //Size of buffer, need 5 more values due to headers and stuff.
-
+//#ifdef READOUT_MCP_CPCI
+#define BUFFERSIZE    32850  //Size of buffer, need 5 more values due to headers and stuff, +16 extra things for fun
+//#else
+//#define BUFFERSIZE    32810  //Size of buffer, need 5 more values due to headers and stuff.
+//#endif
 //#define VOLTS_PER_COUNT      0.001 * 2.7782   // old value: 0.001 * 0.6184
 #define VOLTS_PER_COUNT      0.001 * 0.6184
 

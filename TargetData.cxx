@@ -26,7 +26,11 @@ void TargetData::unpackData()
   unsigned int raw_temp[NUM_TARGETS];
   unsigned int raw_rovdd[NUM_TARGETS];
   unsigned int raw_scaler[NUM_TARGETS][3];
+#ifdef READOUT_MCP_CPCI
+  int count = 9;
+#else
   int count = 1;
+#endif
   int chip,channel,samp;
   int j;
 
