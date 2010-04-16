@@ -152,6 +152,7 @@ void McpTargetDisplay::refreshEventDisplay()
       fMcpTargetEventInfoPad->Draw();
       fMcpTargetCanvas->Update();
    } 
+   //   std::cerr << "Here\n";
 
    //Update info pad with tings of interest
    char textLabel[180];
@@ -168,6 +169,7 @@ void McpTargetDisplay::refreshEventDisplay()
      sprintf(textLabel,"Mem. Addr. %d -- %#x ",chip,fTheTargetDataPtr->memAddrSpace[chip]);
      fFarLeftPave->AddText(textLabel);
    }
+
    fFarLeftPave->Draw();
    fMcpTargetEventInfoPad->cd(2);
    if(fMidLeftPave) delete fMidLeftPave;
@@ -299,13 +301,15 @@ void McpTargetDisplay::refreshEventDisplay()
    fFarRightPave->Draw();
    
    
-
+   //   std::cerr << "Here\n";
 
 
    static TGraph *gr[NUM_TOTAL_CHANNELS]={0};
    static WaveformGraph *wv[NUM_TOTAL_CHANNELS]={0};
-   static TGraph *fft[NUM_TOTAL_CHANNELS]={0};
 
+#ifdef USE_FFT_TOOLS
+   static TGraph *fft[NUM_TOTAL_CHANNELS]={0};
+#endif
    //For now lets be lazy
    static int padsDrawn=0;
    static TPad *padGraphs=0;
@@ -334,6 +338,8 @@ void McpTargetDisplay::refreshEventDisplay()
      }
    }
 
+   //   std::cerr << "Here fred\n";
+   
    //   fMcpTargetMainPad->Divide(8,8,0,0);
    Double_t maxVal=0;
    char graphName[180];
@@ -343,16 +349,28 @@ void McpTargetDisplay::refreshEventDisplay()
    //   Double_t maxFreq=500;
    for(int pixel=0;pixel<NUM_TOTAL_CHANNELS;pixel++) {
      Int_t chan=pmtPixelToChan[pixel];
+     //     std::cerr << pixel << "\t" << chan << "\n";
      sprintf(graphName,"Pixel %d",pixel+1);
      if(gr[pixel]) delete gr[pixel];
      if(wv[pixel]) delete wv[pixel];
+
+#ifdef USE_FFT_TOOLS
      if(fft[pixel]) delete fft[pixel];
-     gr[pixel] = fTheTargetDataPtr->getChannel(chan-1);
+#endif
+
+     //     std::cerr << fTheTargetDataPtr << "\n";
+     gr[pixel] = fTheTargetDataPtr->getChannel(chan);
+     //     std::cerr << pixel << "\t" << gr[pixel] << "\n";
      wv[pixel] = new WaveformGraph(gr[pixel]);
-     wv[pixel]->setChannel(pixel);
+     //     std::cerr << "Waveform: " << pixel << "\t" << wv[pixel] << "\n";
+     wv[pixel]->setPixelAndChannel(pixel,chan);
      wv[pixel]->SetLineColor(9);
+
+#ifdef USE_FFT_TOOLS
      fft[pixel] = (wv[pixel]->getFFT());
      fft[pixel]->SetLineColor(9);
+#endif
+     //     std::cerr << gr[pixel] << "\t" << wv[pixel] << "\t"  << "\n";
 
      //     Double_t sqVal=FFTtools::getPeakSqVal(wv[pixel]);
      Double_t *yVals=wv[pixel]->GetY();
@@ -365,8 +383,9 @@ void McpTargetDisplay::refreshEventDisplay()
      if(sqVal>maxVal)
        maxVal=sqVal;
      wv[pixel]->SetTitle(graphName);
+#ifdef USE_FFT_TOOLS
      fft[pixel]->SetTitle(graphName);
-     
+#endif
 
    }
    gStyle->SetTitle(0);
@@ -414,9 +433,10 @@ void McpTargetDisplay::refreshEventDisplay()
        }
        wv[pixel]->Draw("l");
      }
+#ifdef USE_FFT_TOOLS
      if(fView==2)
        fft[pixel]->Draw("al");
-     
+#endif
 
    }
 
@@ -489,10 +509,12 @@ void McpTargetDisplay::drawEventButtons() {
    fWaveformButton->SetTextSize(0.4);
    fWaveformButton->SetFillColor(kGray+3);
    fWaveformButton->Draw();
+#ifdef USE_FFT_TOOLS
    fPowerButton = new TButton("FFT View","McpTargetDisplay::Instance()->toggleView(2); McpTargetDisplay::Instance()->refreshEventDisplay();",0.05,0.9,0.14,0.95);
    fPowerButton->SetTextSize(0.4);
    fPowerButton->SetFillColor(kGray);
    fPowerButton->Draw();
+#endif
 
    fThresholdSlider = new TSlider("threshSlider","thresh",0.9,0.9,0.95,1);
    fThresholdSlider->SetMethod("McpTargetDisplay::Instance()->updateThresholdFromSlider();");

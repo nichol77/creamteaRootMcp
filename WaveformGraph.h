@@ -21,9 +21,11 @@ class WaveformGraph : public TGraph
   void DrawFFT(); // *MENU*
   TGraph *getFFT();
   void setChannel(int chan) {fChan=chan;}
+  void setPixelAndChannel(int pix, int chan) {fPixel=pix; fChan=chan;}
 
  private:
   Int_t fChan;
+  Int_t fPixel;
 
 
   void ExecuteEvent(Int_t event, Int_t px, Int_t py);

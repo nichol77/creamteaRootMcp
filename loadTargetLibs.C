@@ -4,10 +4,10 @@ void loadTargetLibs() {
 
   gSystem->Load("libGraf.so");
   gSystem->Load("libusb.so");
-  gSystem->Load("libfftw3.so");
-  gSystem->Load("libMathMore.so");
+  //  gSystem->Load("libfftw3.so");
+  //  gSystem->Load("libMathMore.so");
   gSystem->Load("libPhysics.so");  
-  gSystem->Load("libRootFftwWrapper.so");   
+  //  gSystem->Load("libRootFftwWrapper.so");   
   gSystem->Load("libMcpTargetRoot.so");
 
 //   TChain *fred=0; //Will this work?

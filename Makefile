@@ -23,7 +23,7 @@ endif
 #USE_FFT_TOOLS=0
 
 ifdef USE_FFT_TOOLS
-FFTLIBS = -lRootFftwWrapper -lfftw3
+FFTLIBS = -lRootFftwWrapper -lfftw3  -lMathMore 
 FFTFLAG = -DUSE_FFT_TOOLS 
 else
 FFTLIBS =
@@ -39,7 +39,7 @@ endif
 CXXFLAGS     += $(ROOTCFLAGS) $(FFTFLAG) $(SYSINCLUDES) $(INC_RJN_UTIL) -DREADOUT_MCP_CPCI 
 LDFLAGS      += -g $(ROOTLDFLAGS) 
 
-LIBS          = $(ROOTLIBS) -lMathMore -lMinuit $(SYSLIBS) $(LD_RJN_UTIL) $(FFTLIBS) -lusb
+LIBS          = $(ROOTLIBS) -lMinuit $(SYSLIBS) $(LD_RJN_UTIL) $(FFTLIBS) -lusb
 GLIBS         = $(ROOTGLIBS) $(SYSLIBS)
 
 #Now the bits we're actually compiling

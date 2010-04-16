@@ -97,7 +97,7 @@ void WaveformGraph::drawInNewCanvas()
   thisCopy->GetYaxis()->SetTitleSize(0.06);
   thisCopy->GetXaxis()->SetTitle("Time (ns)");
   thisCopy->GetYaxis()->SetTitle("Voltage (mV-ish)");
-  sprintf(graphTitle,"Channel %d",fChan+1);
+  sprintf(graphTitle,"Pixel %d, Channel %d",fPixel+1,fChan+1);
   thisCopy->SetTitle(graphTitle);
   TCanvas *can = new TCanvas();
   can->SetLeftMargin(0.15);
@@ -135,7 +135,8 @@ void WaveformGraph::DrawFFT()
   grFFT->GetYaxis()->SetTitleSize(0.06);
   grFFT->GetXaxis()->SetTitle("Frequency (MHz)");
   grFFT->GetYaxis()->SetTitle("dB (m maybe)");
-  sprintf(graphTitle,"Channel %d",fChan+1);
+  sprintf(graphTitle,"Pixel %d, Channel %d",fPixel+1,fChan+1);
+  //  sprintf(graphTitle,"Channel %d",fChan+1);
   grFFT->SetTitle(graphTitle);
   grFFT->Draw("al");
   
