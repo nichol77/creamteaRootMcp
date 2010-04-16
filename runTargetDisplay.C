@@ -5,13 +5,14 @@ void runTargetDisplay() {
   gSystem->AddIncludePath("-I${ANITA_UTIL_INSTALL_DIR}/include");
   //  cout << gSystem->GetIncludePath() <<endl;
 
-gSystem->Load("libgsl.so");
-  gSystem->Load("libusb.so");
-  gSystem->Load("libfftw3.so");
-  gSystem->Load("libMathMore.so");
+  //  gSystem->Load("libgsl.so");
+  //  gSystem->Load("libusb.so");
+  //  gSystem->Load("libfftw3.so");
+  //  gSystem->Load("libMathMore.so");
+  //  gSystem->Load("libRootFftwWrapper.so");   
+
   gSystem->Load("libGraf.so");  
   gSystem->Load("libPhysics.so");  
-  gSystem->Load("libRootFftwWrapper.so");   
   gSystem->Load("libMcpTargetRoot.so");
 
 //   TChain *fred=0; //Will this work?

@@ -5,11 +5,11 @@ void runOfflineTargetDisplay() {
 
   gSystem->Load("libusb.so");
   gSystem->Load("libfftw3.so");
-  //  gSystem->Load("libgsl.so");
-  //  gSystem->Load("libMathMore.so");
+  gSystem->Load("libgsl.so");
+  gSystem->Load("libMathMore.so");
   gSystem->Load("libGraf.so");
   gSystem->Load("libPhysics.so");  
-  //  gSystem->Load("libRootFftwWrapper.so");   
+  gSystem->Load("libRootFftwWrapper.so");   
   gSystem->Load("libMcpTargetRoot.so");
 
 //   TChain *fred=0; //Will this work?
@@ -18,8 +18,7 @@ void runOfflineTargetDisplay() {
 //  TFile *offlineFile = new TFile("outFiles/outputFile_091209.root");
 //  TFile *offlineFile = new TFile("outFiles/outputFile1k.root");
 //  TFile *offlineFile = new TFile("outFiles/outputFile100.root");
-//  TFile *offlineFile = new TFile("outFiles/outFile240310.root");
-  TFile *offlineFile = new TFile("data/outputFile49.root");
+  TFile *offlineFile = new TFile("outFiles/outFile240310.root");
   McpTargetDisplay *targetPtr = new McpTargetDisplay(1,offlineFile);
   targetPtr->startEventDisplay();
   

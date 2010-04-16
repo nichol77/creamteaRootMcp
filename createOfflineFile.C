@@ -2,12 +2,12 @@ gSystem->Reset();
 
 void createOfflineFile() { 
 
-  gSystem->Load("libusb.so");
-  gSystem->Load("libfftw3.so");
-  gSystem->Load("libMathMore.so");
+//   gSystem->Load("libusb.so");
+//   gSystem->Load("libfftw3.so");
+//   gSystem->Load("libMathMore.so");
+//   gSystem->Load("libRootFftwWrapper.so");   
   gSystem->Load("libGraf.so");
   gSystem->Load("libPhysics.so");  
-  gSystem->Load("libRootFftwWrapper.so");   
   gSystem->Load("libMcpTargetRoot.so");
 
 //   TChain *fred=0; //Will this work?
@@ -26,20 +26,29 @@ void createOfflineFile() {
   }
   run++;
   {
-    ofstream RunNumFile("theLatestRunNumber.txt");
-    if(RunNumFile) {
-      RunNumFile << run;
+    ofstream RunNumFile2("theLatestRunNumber.txt");
+    if(RunNumFile2) {
+      RunNumFile2 << run;
     }
-    RunNumFile.close();
+    RunNumFile2.close();
   }    
+  std::cout << "Starting run " << run << "\n";
   char outName[180];
   sprintf(outName,"data/outputFile%d.root",run);  
-  myTarget->openOutputFile();
-  for(int i=0;i<1000;i++) {
-    std::cerr << "*";
-    myTarget->sendSoftTrig();
+  myTarget->openOutputFile(outName);
+  TStopwatch stopy;
+  stopy.Start();
+
+  Int_t numEvents=1000;
+
+  for(int i=0;i<numEvents;i++) {
+    if(i%100==0) std::cerr << "*";
+    //    myTarget->sendSoftTrig();
     myTarget->readEvent();
   }
+  stopy.Stop();
   std::cerr << "\n";
+  std::cout << "Took " << numEvents << " events in " << stopy.RealTime()
+	    << "s at " << numEvents/stopy.RealTime() << "Hz\n";
   myTarget->saveOutputFile();
 }
