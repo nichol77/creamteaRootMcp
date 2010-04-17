@@ -126,7 +126,7 @@ Int_t McpTarget::justReadBuffer()
 
 void McpTarget::generatePedestals() 
 {
-  std::cerr << "Here\n";
+  //  std::cerr << "Here\n";
   if(fOfflineMode) {
     std::cerr << "Running in offline mode can't generate pedestals\n";
     return;
@@ -137,6 +137,8 @@ void McpTarget::generatePedestals()
       for(int row=0;row<NUM_ROWS;row++) {
 	for(int col=0;col<NUM_COLS;col++) {
 	  tempValues[chip][chan][row][col]= new Double_t [SAMPLES_PER_COL];
+	  for(int samp=0;samp>SAMPLES_PER_COL;samp++)
+	    tempValues[chip][chan][row][col][samp]=0;
 	}
       }
     }
@@ -147,16 +149,18 @@ void McpTarget::generatePedestals()
   TFile *fpTemp = new TFile("pedFile.root","RECREATE");
   TTree *pedTree = new TTree("pedTree","Tree of pedestal thingies");    
   pedTree->Branch("target","RawTargetData",&fRawTargetDataPtr);
-  pedTree->Branch("values",&fReadoutBuffer[0],"values[4140]/s");
+  pedTree->Branch("values",&fReadoutBuffer[0],"values[32810]/s");
   enablePedestal(1);
   
   for(row=0;row<NUM_ROWS;row++) {
     for(col=0;col<NUM_COLS;col++) {	
+//  for(row=0;row<1;row++) {
+//    for(col=0;col<1;col++) {	
       setPedRowCol(row,col);      
       
       for(int event=0;event<fNumPedEvents;event++) {
 	//Send software trigger
-	std::cerr << "*";
+	if(event%100==0) std::cerr << "*";
 	sendSoftTrig();
 #ifndef READOUT_MCP_CPCI
 	usleep(1000);
@@ -168,24 +172,41 @@ void McpTarget::generatePedestals()
 	RawTargetData rawTargetData(this->fReadoutBuffer);
 	fTargetDataPtr=&targetData;
 	fRawTargetDataPtr=&rawTargetData;
-	//	pedTree->Fill();	
+	pedTree->Fill();	
 	countStuff[row][col]++;
+
 	for(int chip=0;chip<NUM_TARGETS;chip++) {
+
+	  Int_t readRow=fTargetDataPtr->rowLoc[chip];
+	  Int_t readCol=fTargetDataPtr->colLoc[chip];
+	  if(row!=readRow || col!=readCol) {
+	    std::cerr << "Oops: " << chip << "\t" << row  << "\t" << col << "\t" 
+		      << readRow << "\t" << readCol << "\n";
+	  }
+
 	  for(int chan=0;chan<NUM_CHANNELS;chan++) {
 	    for(int samp=0;samp<SAMPLES_PER_COL;samp++) {
+	      
+	      Double_t valueInt=targetData.data[chip][chan][samp];
+	      
+	      if(chip==0 && chan==0 && samp==0) {
+		if(targetData.raw[1]==32768) {
+		  std::cout << chip << "\t" << chan << "\t" << row << "\t" << col << "\t"
+			    << samp << "\t" << valueInt << "\t" << fPedestalValues[chip][chan][row][col][samp]
+			    << "\n";
+		}
+	      }
+
 	      Float_t value=(Float_t)targetData.data[chip][chan][samp];
 	      tempValues[chip][chan][row][col][samp]+=value;
 	    }
 	  }
 	}
       }
-	std::cerr << "\n";
+      std::cerr << "\n";
     }
     std::cout << "Read " << fNumPedEvents << " events from " << row << "\n";
   }
-        
-  pedTree->AutoSave();
-  delete fpTemp;
   
   std::ofstream PedFile("pedestal.txt");
   for(int chip=0;chip<NUM_TARGETS;chip++) {
@@ -196,6 +217,8 @@ void McpTarget::generatePedestals()
 	    if(countStuff[row][col]>0) {
 	      tempValues[chip][chan][row][col][samp]/=countStuff[row][col];
 	      fPedestalValues[chip][chan][row][col][samp]=(Int_t)tempValues[chip][chan][row][col][samp];
+	      if(chip==0 && chan==0 && row==0 && col==0 && samp==0)
+		std::cout << fPedestalValues[chip][chan][row][col][samp] << "\n";
 	    }
 	    PedFile << fPedestalValues[chip][chan][row][col][samp] << "\n";
 	  }
@@ -204,6 +227,10 @@ void McpTarget::generatePedestals()
       }
     } 
   }
+
+        
+  pedTree->AutoSave();
+  //  delete fpTemp;
 }
 
 int McpTarget::readEvent()
@@ -282,7 +309,18 @@ void McpTarget::fillVoltageArray(TargetData *targetDataPtr)
 // 	std::cerr << row << "\t" << col << "\t" << NUM_ROWS << "\t"
 // 		  << NUM_COLS << "\n";
 // 	std::cerr << fPedestalValues[chip][chan][row][col][samp] << "\n";
+	if(chip==3 && chan==11 && samp==160) {
+	  //  if(targetDataPtr->raw[1]==32768) {
+	  if(row==2 && col==28) {
+	    std::cout << chip << "\t" << chan << "\t" << row << "\t" << col << "\t"
+		      << samp << "\t" << value << "\t" << fPedestalValues[chip][chan][row][col][samp]
+		      << "\n";
+	  }
+	}
+
 	value-=fPedestalValues[chip][chan][row][col][samp]; 
+	
+
 	fVoltBuffer[chip][chan][samp]=value;
 	targetDataPtr->fVoltBuffer[chip][chan][samp]=value;
 	//	exit(0);
@@ -460,15 +498,16 @@ void McpTarget::setTermValue(Int_t f100, Int_t f1k, Int_t f10k)
     std::cerr << "Running in offline mode can't set TERM value\n";
     return;
   }
-  //  UInt_t dataVal=TERM_MASK;
-  //  dataVal |= ((f100&0x1) << TERM_100_OHMS_SHIFT);
-  //  dataVal |= ((f1k&0x1) << TERM_1K_OHMS_SHIFT);
-  //  dataVal |= ((f10k&0x1) << TERM_10K_OHMS_SHIFT);
-  unsigned int dataVal;
-  //dataVal = f10k << 16 & TERM_MASK;      //10kohms
-  //dataVal = f1k  << 17 & dataVal;//1kohms
-  //dataVal = f100 << 18 & dataVal;//100ohms
-
+   UInt_t dataVal=TERM_BASE;
+   dataVal |= ((f100&0x1) << TERM_100_OHMS_SHIFT);
+   dataVal |= ((f1k&0x1) << TERM_1K_OHMS_SHIFT);
+   dataVal |= ((f10k&0x1) << TERM_10K_OHMS_SHIFT);
+//   unsigned int dataVal=0;
+//   //dataVal = f10k << 16 & TERM_MASK;      //10kohms
+//   //dataVal = f1k  << 17 & dataVal;//1kohms
+//   //dataVal = f100 << 18 & dataVal;//100ohms
+//   std::cout << f100 << "\t" << f1k << "\t" << f10k << "\n";
+//   std::cout << std::hex << dataVal << "\n";
 
 
 

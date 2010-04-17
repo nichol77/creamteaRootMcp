@@ -9,6 +9,11 @@
 #include <string.h>
 #include <stdint.h>
 #include <iostream>
+#include <stdio.h>
+#include <stdlib.h>
+#include <fcntl.h>     
+#include <sys/ioctl.h>
+#include "testDriver_ioctl.h"
 #include "McpPci.h"
 
 #define MCP_DEV "/dev/MCP_cPCI"
@@ -51,16 +56,25 @@ bool McpPci::sendData(unsigned int data)
 {
   if(!fTheFd) createHandles();
  int retval= 0;
- while (retval <= 0) {    
-   retval = write(fTheFd, &data, sizeof(unsigned int));   
-   if (retval < 0) {    
-     printf("Error sending command!\n");      
-     if (errno != EAGAIN) {
-       perror("Error writing:");
-       return FAILED;
-     } 
-   }
+ struct testDriverRead req;
+ // std::cout << std::hex << data << "\n";
+ req.address = 0x1c;
+ req.barno = 1;
+ req.value = data;
+ if (ioctl(fTheFd, TEST_IOCWRITE, &req)) {
+   perror("ioctl");
+   close(fTheFd);
+   exit(1);
  }
+   //   retval = write(fTheFd, &data, sizeof(unsigned int));   
+//    if (retval < 0) {    
+//      printf("Error sending command!\n");      
+//      if (errno != EAGAIN) {
+//        perror("Error writing:");
+//        return FAILED;
+//      } 
+//    }
+ //}
  return SUCCEED;
 }
 

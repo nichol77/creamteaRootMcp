@@ -36,6 +36,7 @@
 #define TRIG_POLARITY_POS              0x00000007
 #define TRIG_POLARITY_NEG              0x00010007
 #define TERM_MASK                      0x000f0008
+#define TERM_BASE                      0x00000008
 
 
 #define TERM_100_OHMS_SHIFT 18

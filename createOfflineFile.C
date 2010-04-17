@@ -41,9 +41,10 @@ void createOfflineFile() {
 
   Int_t numEvents=1000;
 
+  myTarget->setSoftTrigMode(0);
   for(int i=0;i<numEvents;i++) {
-    if(i%100==0) std::cerr << "*";
-    //    myTarget->sendSoftTrig();
+    //    if(i%100==0) 
+    std::cerr << "*";
     myTarget->readEvent();
   }
   stopy.Stop();
