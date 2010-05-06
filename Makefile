@@ -35,6 +35,8 @@ SYSLIBS +=-lprofiler
 endif
 
 
+USE_USB_READOUT=1
+
 #Generic and Site Specific Flags
 #Toggle between MCP_PCI and USB using the READOUT_MCP_CPCI flag
 CXXFLAGS     += $(ROOTCFLAGS) $(FFTFLAG) $(SYSINCLUDES) $(INC_RJN_UTIL) 

@@ -8,6 +8,7 @@ StdUSB libusb implementation used here uses same function interface with native 
 
 #include <string.h>
 #include <stdio.h>
+#include <errno.h>
 #include "stdUSB.h"
 
 stdUSB::stdUSB(void) {
@@ -38,7 +39,7 @@ bool stdUSB::createHandles(void) {
 
     if (retval == 0) {
       printf("stdUSB::init() %d %s\n",retval,strerror(-1*retval));
-        goto fail;
+      goto fail;
     }
     stdHandle = usb_open(dev);
     if (stdHandle == INVALID_HANDLE_VALUE) {
@@ -68,7 +69,7 @@ bool stdUSB::createHandles(void) {
 
     /* on ok */
 ok:
-//printf("createhandles: OK\n");
+    printf("createhandles: OK\n");
     return SUCCEED;
 
     /* on failure*/
@@ -97,7 +98,7 @@ struct usb_device* stdUSB::init(void) {
     for (usb_bus = usb_busses; usb_bus; usb_bus = usb_bus->next) {
         for (dev = usb_bus->devices; dev; dev = dev->next) {
             if ((dev->descriptor.idVendor == USBFX2_VENDOR_ID) && (dev->descriptor.idProduct == USBFX2_PRODUCT_ID)) {
-//                printf("init: found device: %d\n", (int)dev);
+	       printf("init: found device: %d\n", (long)dev);
                 return dev;
             }
         }
@@ -155,12 +156,14 @@ bool stdUSB::sendData(unsigned int data)// throw(...)
     */
     int retval = usb_bulk_write(stdHandle, USBFX2_EP_WRITE, buff, sizeof(buff), USB_TOUT_MS);
 
-//    printf("SendData: sent %d bytes\n", retval);
+    //    printf("SendData: sent %d bytes\n", retval);
 
     if (retval == 4) //return value must be exact as the bytes transferred
         return SUCCEED;
-    else
+    else {
+	printf("Error sending data: %s\n",strerror(errno));
         return FAILED;
+    }
 }
 
 /**

@@ -62,6 +62,7 @@ class McpTarget
 
 
  private:
+  Int_t fDebug;
   Int_t fOfflineMode;
   Int_t fOutputMode; /// Are we writing out ROOT files?
   Int_t fDumpRawHexData; ///< Whether or not to dump out the raw hex data 

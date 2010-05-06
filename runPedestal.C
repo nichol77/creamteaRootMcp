@@ -5,17 +5,17 @@ void runPedestal() {
   gSystem->AddIncludePath("-I${ANITA_UTIL_INSTALL_DIR}/include");
   //  cout << gSystem->GetIncludePath() <<endl;
 
-  gSystem->Load("libusb.so");
-  gSystem->Load("libfftw3.so");
+  //  gSystem->Load("libusb.so");
+  //  gSystem->Load("libfftw3.so");
   gSystem->Load("libGraf.so");
- gSystem->Load("libMathMore.so");
+  // gSystem->Load("libMathMore.so");
   gSystem->Load("libPhysics.so");  
-  gSystem->Load("libRootFftwWrapper.so");   
+  //  gSystem->Load("libRootFftwWrapper.so");   
   gSystem->Load("libMcpTargetRoot.so");
 
 //   TChain *fred=0; //Will this work?
    McpTarget *myTarget = new McpTarget();
-   myTarget->setNumPedEvents(100);
+   myTarget->setNumPedEvents(1000);
    myTarget->generatePedestals();
   
 }

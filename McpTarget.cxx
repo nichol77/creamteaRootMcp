@@ -21,14 +21,14 @@ stdUSB fTheUsb;
 #endif
 
 McpTarget::McpTarget(int offlineMode) 
-  :fOfflineMode(offlineMode),fExtTrigMode(0),fEventNumber(0),fNumPedEvents(100)
+   :fDebug(1),fOfflineMode(offlineMode),fExtTrigMode(0),fEventNumber(0),fNumPedEvents(100)
 {
   for(int chip=0;chip<NUM_TARGETS;chip++) {
     for(int chan=0;chan<NUM_CHANNELS;chan++) {
       for(int row=0;row<NUM_ROWS;row++) {
 	for(int col=0;col<NUM_COLS;col++) {
 	  for(int samp=0;samp<SAMPLES_PER_COL;samp++) {
-	    fPedestalValues[chip][chan][row][col][samp]=2000;
+	    fPedestalValues[chip][chan][row][col][samp]=900;
 	  }
 	}
       }
@@ -46,6 +46,7 @@ McpTarget::McpTarget(int offlineMode)
   if(!fOfflineMode) {
     std::cerr << "Trying to setup something\n";
 #ifdef READOUT_MCP_CPCI
+    fThePci.sendData(CLEAR_EVENT_CPCI_BOARD_MASK);
 #else
     
     if (fTheUsb.createHandles() != true) {
@@ -101,7 +102,7 @@ Int_t McpTarget::justReadBuffer()
 
 #else
   bool retVal=fTheUsb.readData(fReadoutBuffer, BUFFERSIZE, &bytesRead);
-  if(retVal!=true) { 
+  if(retVal!=true || bytesRead<BUFFERSIZE) { 
     sleep(1);
     retVal=fTheUsb.readData(fReadoutBuffer, BUFFERSIZE, &bytesRead);
   }
@@ -149,11 +150,11 @@ void McpTarget::generatePedestals()
   TFile *fpTemp = new TFile("pedFile.root","RECREATE");
   TTree *pedTree = new TTree("pedTree","Tree of pedestal thingies");    
   pedTree->Branch("target","RawTargetData",&fRawTargetDataPtr);
-  pedTree->Branch("values",&fReadoutBuffer[0],"values[32810]/s");
+  //  pedTree->Branch("values",&fReadoutBuffer[0],"values[32810]/s");
   enablePedestal(1);
   
   for(row=0;row<NUM_ROWS;row++) {
-    for(col=0;col<NUM_COLS;col++) {	
+    for(col=0;col<NUM_COLS;col+=2) {	
 //  for(row=0;row<1;row++) {
 //    for(col=0;col<1;col++) {	
       setPedRowCol(row,col);      
@@ -162,9 +163,6 @@ void McpTarget::generatePedestals()
 	//Send software trigger
 	if(event%100==0) std::cerr << "*";
 	sendSoftTrig();
-#ifndef READOUT_MCP_CPCI
-	usleep(1000);
-#endif
 	Int_t retVal=justReadBuffer();
 	if(retVal<0) continue;
 	//Now unpack the data into a more useful structure
@@ -189,13 +187,13 @@ void McpTarget::generatePedestals()
 	      
 	      Double_t valueInt=targetData.data[chip][chan][samp];
 	      
-	      if(chip==0 && chan==0 && samp==0) {
-		if(targetData.raw[1]==32768) {
-		  std::cout << chip << "\t" << chan << "\t" << row << "\t" << col << "\t"
-			    << samp << "\t" << valueInt << "\t" << fPedestalValues[chip][chan][row][col][samp]
-			    << "\n";
-		}
-	      }
+// 	      if(chip==0 && chan==0 && samp==0) {
+// 		if(targetData.raw[1]==32768) {
+// 		  std::cout << chip << "\t" << chan << "\t" << row << "\t" << col << "\t"
+// 			    << samp << "\t" << valueInt << "\t" << fPedestalValues[chip][chan][row][col][samp]
+// 			    << "\n";
+// 		}
+// 	      }
 
 	      Float_t value=(Float_t)targetData.data[chip][chan][samp];
 	      tempValues[chip][chan][row][col][samp]+=value;
@@ -245,15 +243,15 @@ int McpTarget::readEvent()
   static int counter=0;	
     
 
-  if(counter<2) {
-    useSyncUsb(0);
-    setTermValue(0,1,0);
-    enablePedestal(false);
-    setPedRowCol(0,0);
-    setTrigPolarity(false); //Falling edge
-    setWbias(800); ///< ~1us allegedly
-    setTrigThresh(1639); ///< 1.4v
-  }
+//   if(counter<2) {
+//     useSyncUsb(1);
+//     setTermValue(0,1,0);
+//     enablePedestal(false);
+//     setPedRowCol(0,0);
+//     setTrigPolarity(false); //Falling edge
+//     setWbias(800); ///< ~1us allegedly
+//     setTrigThresh(1639); ///< 1.4v
+//   }
 
   if(fSoftTrigMode) {
     sendSoftTrig();
@@ -583,11 +581,12 @@ void McpTarget:: sendSoftTrig()
     std::cerr << "Running in offline mode can't send software trigger\n";
     return;
   }
-
+  //  if(fDebug) std::cerr << "Sending software trigger\n";
 #ifdef READOUT_MCP_CPCI
   fThePci.sendData(SOFT_TRIG_MASK);
 #else
   fTheUsb.sendData(SOFT_TRIG_MASK);
+  usleep(1000);
 #endif
 }
 
