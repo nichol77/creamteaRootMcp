@@ -58,7 +58,6 @@ class McpTarget
   void fillVoltageArray(TargetData *targetDataPtr);
   void openOutputFile(char filename[]);
   void saveOutputFile();
-  
 
 
  private:

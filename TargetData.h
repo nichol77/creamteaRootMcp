@@ -43,9 +43,11 @@ class TargetData: public RawTargetData
 		      chanInd%NUM_CHANNELS);
   }
   TGraph *getChannel(Int_t chip, Int_t channel);
+  void commonModeCorrection();
  private:
   void unpackMemAddrSpace();
   void unpackFeedback();
+
   ClassDef(TargetData,3);
 };
 

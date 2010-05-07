@@ -128,3 +128,22 @@ TGraph *TargetData::getChannel(int chip, int channel)
   TGraph *gr = new TGraph(SAMPLES_PER_COL,timeVals,voltVals);
   return gr;
 }
+
+
+void TargetData::commonModeCorrection() 
+{
+   
+  for(int chip=0;chip<NUM_TARGETS;chip++) {
+     for(int samp=0;samp<SAMPLES_PER_COL;samp++)  {
+	Double_t meanVal=0;
+	for(int chan=0;chan<NUM_CHANNELS;chan++) {
+	   meanVal+=fVoltBuffer[chip][chan][samp];
+	}
+	meanVal/=NUM_CHANNELS;
+	for(int chan=0;chan<NUM_CHANNELS;chan++) {
+	   fVoltBuffer[chip][chan][samp]-=meanVal;
+	}
+     }
+  }
+
+}

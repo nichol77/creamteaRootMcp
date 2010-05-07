@@ -326,7 +326,9 @@ void McpTarget::fillVoltageArray(TargetData *targetDataPtr)
       }
     }
   }
+  targetDataPtr->commonModeCorrection();
 }
+
 
 // void McpTarget::setExtTrigMode(int mode)
 // {
