@@ -86,8 +86,9 @@ bool McpPci::readData(unsigned short * pData, int length, int* lread)
   int startWord = 1;
   int retval;  
   retval = 0;
+  int countTries=0;
   while (retval <= 0) {    
-    retval = read(fTheFd, bigBuffer, sizeof(unsigned int)*newLength);
+    retval = read(fTheFd, bigBuffer, sizeof(unsigned int)*newLength);    
     if (retval < 0) {      
       if (errno != EAGAIN) {	
 	perror("Error reading:");	
@@ -98,6 +99,12 @@ bool McpPci::readData(unsigned short * pData, int length, int* lread)
     for(int i=0;i<length;i++) {
       pData[i]=bigBuffer[i+startWord]&0xffffffff;
     }
+    countTries++;
+    if(countTries>10) {
+      fprintf(stderr,"Tried to read too many times, giving up.\n");
+      return FAILED;
+    }
+	      
   }
   return SUCCEED;
 }

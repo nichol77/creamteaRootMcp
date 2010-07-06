@@ -48,6 +48,8 @@ class McpTargetDisplay
   void setOfflineMode(TFile *inputFile);
   void startEventDisplay(); //these are 
   int displayNextEvent(); // all the
+  int displayPreviousEvent(); // all the
+  int displayThisEntry(int entry) {fTheOfflineEntry=entry; displayNextEvent();}
   void refreshEventDisplay(); // same
   void toggleView(Int_t view) {fView=view;}
   void toggleAutoscale();

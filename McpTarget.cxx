@@ -8,9 +8,9 @@
 #include "TTree.h"
 
 
-#include "McpPci.h"
 #ifndef READOUT_MCP_CPCI
 #include "stdUSB.h"
+#include "McpPci.h"
 #endif
 
 
@@ -326,7 +326,7 @@ void McpTarget::fillVoltageArray(TargetData *targetDataPtr)
       }
     }
   }
-  targetDataPtr->commonModeCorrection();
+  //  targetDataPtr->commonModeCorrection();
 }
 
 

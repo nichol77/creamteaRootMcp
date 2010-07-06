@@ -479,21 +479,59 @@ int McpTargetDisplay::displayNextEvent()
 }
 
 
+int McpTargetDisplay::displayPreviousEvent()
+{  
+  Int_t gotEvent=0;
+  if(!fOfflineMode) {
+    //    gotEvent=fTheMcpTarget.readEvent();
+    //    fTheTargetDataPtr=fTheMcpTarget.getTargetData(); //Do not delete
+    return gotEvent;
+  }
+  else {
+    //    std::cout << fTheOfflineEntry << "\t" << fTheOfflineTree->GetEntries() << "\n";
+    if(fTheOfflineEntry>1) {
+      fTheOfflineEntry-=2;      
+      fTheOfflineTree->GetEntry(fTheOfflineEntry);
+      if(fTheTargetDataPtr) 
+	delete fTheTargetDataPtr;
+      //      std::cerr << fTheTargetDataPtr << "\t" <<fTheRawTargetDataPtr << "\n";
+      //      std::cerr << fTheOfflineEntry << "\t" << fTheRawTargetDataPtr->raw[3] << "\n";
+      fTheTargetDataPtr=new TargetData(fTheRawTargetDataPtr);
+      fTheMcpTarget.fillVoltageArray(fTheTargetDataPtr);
+      //      std::cerr << fTheOfflineEntry << "\t" << fTheTargetDataPtr->raw[3] << "\t" << fTheTargetDataPtr->data[0][0][0] << "\t" << fTheTargetDataPtr->fVoltBuffer[0][0][0] <<  "\n";
+
+      fTheOfflineEntry++;
+      gotEvent=1;
+    }    
+  }
+  if(gotEvent==1)
+    refreshEventDisplay(); 
+  else {
+    //Didn't got event
+  }
+  return gotEvent;
+}
+
+
 
 
 void McpTargetDisplay::drawEventButtons() {
-
+  if(!fOfflineMode) {
    TButton *butSave = new TButton("Save ","McpTargetDisplay::Instance()->saveTree();",0,0.97,0.05,1);
    butSave->SetTextSize(0.5);
    butSave->SetFillColor(kBlue-3);
    butSave->Draw();
-   
+  }
 
 
    TButton *butNext = new TButton("Next ","McpTargetDisplay::Instance()->displayNextEvent();",0.95,0.97,1,1);
    butNext->SetTextSize(0.5);
    butNext->SetFillColor(kGreen-10);
    butNext->Draw();
+   TButton *butPrev = new TButton("Prev. ","McpTargetDisplay::Instance()->displayPreviousEvent();",0.9,0.97,0.95,1);
+   butPrev->SetTextSize(0.5);
+   butPrev->SetFillColor(kRed-10);
+   butPrev->Draw();
    
 
    TButton *butPlay = new TButton("Play","McpTargetDisplay::Instance()->startEventPlaying();",0.95,0.93,1,0.96);
@@ -518,11 +556,13 @@ void McpTargetDisplay::drawEventButtons() {
    fPowerButton->Draw();
 #endif
 
-   fThresholdSlider = new TSlider("threshSlider","thresh",0.9,0.9,0.95,1);
-   fThresholdSlider->SetMethod("McpTargetDisplay::Instance()->updateThresholdFromSlider();");
-   fThresholdSlider->SetRange(0,0.2);
-   fThresholdSlider->SetEditable(0);
-   updateThreshold(fTheMcpTarget.getTrigThresh());
+   if(!fOfflineMode) {
+     fThresholdSlider = new TSlider("threshSlider","thresh",0.9,0.9,0.95,1);
+     fThresholdSlider->SetMethod("McpTargetDisplay::Instance()->updateThresholdFromSlider();");
+     fThresholdSlider->SetRange(0,0.2);
+     fThresholdSlider->SetEditable(0);
+     updateThreshold(fTheMcpTarget.getTrigThresh());
+   }
 
 }
 

@@ -22,6 +22,8 @@ endif
 #Toggles the FFT functions on and off
 #USE_FFT_TOOLS=0
 
+USE_USB_READOUT=1
+
 ifdef USE_FFT_TOOLS
 FFTLIBS = -lRootFftwWrapper -lfftw3  -lMathMore 
 FFTFLAG = -DUSE_FFT_TOOLS 
@@ -47,8 +49,8 @@ GLIBS         = $(ROOTGLIBS) $(SYSLIBS)
 
 #Now the bits we're actually compiling
 ROOT_LIBRARY = libMcpTargetRoot.${DLLSUF}
-LIB_OBJS =  McpTarget.o McpTargetDisplay.o WaveformGraph.o FFTGraph.o  TargetData.o RawTargetData.o McpPci.o targetDict.o
-CLASS_HEADERS = McpTarget.h McpTargetDisplay.h WaveformGraph.h FFTGraph.h TargetData.h RawTargetData.h McpPci.h
+LIB_OBJS =  McpTarget.o McpTargetDisplay.o WaveformGraph.o FFTGraph.o  TargetData.o RawTargetData.o  targetDict.o
+CLASS_HEADERS = McpTarget.h McpTargetDisplay.h WaveformGraph.h FFTGraph.h TargetData.h RawTargetData.h
 
 
 
@@ -57,6 +59,8 @@ LIBS +=  -lusb
 LIB_OBJS += stdUSBl.o
 else
 CXXFLAGS += -DREADOUT_MCP_CPCI 
+CLASS_HEADERS +=  McpPci.h
+LIB_OBJS += McpPci.o
 endif
 
 all : $(ROOT_LIBRARY)
