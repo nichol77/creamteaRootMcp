@@ -8,9 +8,9 @@
 #include "TTree.h"
 
 
+#include "McpPci.h"
 #ifndef READOUT_MCP_CPCI
 #include "stdUSB.h"
-#include "McpPci.h"
 #endif
 
 
@@ -53,9 +53,9 @@ McpTarget::McpTarget(int offlineMode)
       std::cerr << "USB failed to initalize.\n";
       exit(0);
     }
+    useSyncUsb(0);
 #endif
     
-    useSyncUsb(0);
     setTermValue(0,1,0);
     enablePedestal(false);
     setPedRowCol(0,0);

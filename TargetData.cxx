@@ -1,4 +1,7 @@
  #include "TargetData.h"
+#include <iostream>
+#include <fstream>
+#include <ctime>
 ClassImp(TargetData)
 /////////////////////////////////////////////////////////
 TargetData::TargetData(void)
@@ -66,6 +69,16 @@ void TargetData::unpackData()
       scaler[chip][j] = (float)raw_scaler[chip][j]/60.0;//Hz	
     }
   }
+
+#ifdef TEMP_MONITOR
+  ofstream TempFile("/tmp/theTemps.txt",ofstream::app);
+  
+  std::cerr << "Temps:" << temperature[0] << "\t" <<temperature[1] 
+	    << "\t" << temperature[2] << "\t" << temperature[3] << "\n";
+  TempFile << time(NULL) << "\t"  << temperature[0] << "\t" <<temperature[1] 
+	   << "\t" << temperature[2] << "\t" << temperature[3] << "\n";
+  TempFile.close();
+#endif
   unpackMemAddrSpace();
   unpackFeedback();
 }
