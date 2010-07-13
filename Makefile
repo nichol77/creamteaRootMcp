@@ -37,7 +37,8 @@ SYSLIBS +=-lprofiler
 endif
 
 
-USE_USB_READOUT=1
+#Comment in or out below line to switch between USB and PCI readout
+#USE_USB_READOUT=1
 
 #Generic and Site Specific Flags
 #Toggle between MCP_PCI and USB using the READOUT_MCP_CPCI flag
