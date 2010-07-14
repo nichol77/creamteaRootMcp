@@ -66,11 +66,12 @@ McpTargetDisplay::McpTargetDisplay(int offlineMode,TFile *inputFile)
   fAbsMaxScale=2096;
   fMinScale=-100;
   fMaxScale=100;
+  fWhichModule=0;
 
   fTheOfflineFile=0;
   fTheOfflineTree=0;
-  fTheTargetDataPtr=0;
-  fTheRawTargetDataPtr=0;
+  fTheMultiPtr=0;
+  fTheMultiRawTargetModulesPtr=0;
   fTheOfflineEntry=0;
   if(inputFile) {
     setOfflineMode(inputFile);
@@ -113,7 +114,7 @@ void McpTargetDisplay::setOfflineMode(TFile *inputFile)
     std::cerr << "No input tree -- giving up\n";
     exit(0);
   }
-  fTheOfflineTree->SetBranchAddress("target",&fTheRawTargetDataPtr);
+  fTheOfflineTree->SetBranchAddress("target",&fTheMultiRawTargetModulesPtr);
     
 
 }
@@ -123,7 +124,7 @@ void McpTargetDisplay::startEventDisplay()
   //Read junk event
   if(!fOfflineMode) {
     fTheMcpTarget.readEvent();
-    fTheTargetDataPtr=fTheMcpTarget.getTargetData(); //Do not delete
+    fTheMultiPtr=fTheMcpTarget.getTargetData(); //Do not delete
   }
   else {
   }
@@ -165,8 +166,10 @@ void McpTargetDisplay::refreshEventDisplay()
    fFarLeftPave->SetBorderSize(0);
    fFarLeftPave->SetFillColor(0);
    fFarLeftPave->SetTextAlign(13);
+   sprintf(textLabel,"Module %d",fWhichModule);
+   fFarLeftPave->AddText(textLabel);
    for(int chip=0;chip<NUM_TARGETS;chip++) {
-     sprintf(textLabel,"Mem. Addr. %d -- %#x ",chip,fTheTargetDataPtr->memAddrSpace[chip]);
+     sprintf(textLabel,"Mem. Addr. %d -- %#x ",chip,fTheMultiPtr->targetData[fWhichModule].memAddrSpace[chip]);
      fFarLeftPave->AddText(textLabel);
    }
 
@@ -179,28 +182,28 @@ void McpTargetDisplay::refreshEventDisplay()
    fMidLeftPave->SetFillColor(0);
    fMidLeftPave->SetTextAlign(13);
    sprintf(textLabel,"Row -- %d,%d,%d,%d",
-	   fTheTargetDataPtr->rowLoc[0],
-	   fTheTargetDataPtr->rowLoc[1],
-	   fTheTargetDataPtr->rowLoc[2],
-	   fTheTargetDataPtr->rowLoc[3]);
+	   fTheMultiPtr->targetData[fWhichModule].rowLoc[0],
+	   fTheMultiPtr->targetData[fWhichModule].rowLoc[1],
+	   fTheMultiPtr->targetData[fWhichModule].rowLoc[2],
+	   fTheMultiPtr->targetData[fWhichModule].rowLoc[3]);
    fMidLeftPave->AddText(textLabel);
    sprintf(textLabel,"Col -- %d,%d,%d,%d",
-	   fTheTargetDataPtr->colLoc[0],
-	   fTheTargetDataPtr->colLoc[1],
-	   fTheTargetDataPtr->colLoc[2],
-	   fTheTargetDataPtr->colLoc[3]);
+	   fTheMultiPtr->targetData[fWhichModule].colLoc[0],
+	   fTheMultiPtr->targetData[fWhichModule].colLoc[1],
+	   fTheMultiPtr->targetData[fWhichModule].colLoc[2],
+	   fTheMultiPtr->targetData[fWhichModule].colLoc[3]);
    fMidLeftPave->AddText(textLabel);
    sprintf(textLabel,"HITBIT -- %d,%d,%d,%d",
-	   fTheTargetDataPtr->hitBit[0],
-	   fTheTargetDataPtr->hitBit[1],
-	   fTheTargetDataPtr->hitBit[2],
-	   fTheTargetDataPtr->hitBit[3]);
+	   fTheMultiPtr->targetData[fWhichModule].hitBit[0],
+	   fTheMultiPtr->targetData[fWhichModule].hitBit[1],
+	   fTheMultiPtr->targetData[fWhichModule].hitBit[2],
+	   fTheMultiPtr->targetData[fWhichModule].hitBit[3]);
    fMidLeftPave->AddText(textLabel);
    sprintf(textLabel,"Thresh -- %d,%d,%d,%d",
-	   fTheTargetDataPtr->thresh[0],
-	   fTheTargetDataPtr->thresh[1],
-	   fTheTargetDataPtr->thresh[2],
-	   fTheTargetDataPtr->thresh[3]);
+	   fTheMultiPtr->targetData[fWhichModule].thresh[0],
+	   fTheMultiPtr->targetData[fWhichModule].thresh[1],
+	   fTheMultiPtr->targetData[fWhichModule].thresh[2],
+	   fTheMultiPtr->targetData[fWhichModule].thresh[3]);
    fMidLeftPave->AddText(textLabel);
    fMidLeftPave->Draw();
    fMcpTargetEventInfoPad->cd(3);
@@ -211,28 +214,28 @@ void McpTargetDisplay::refreshEventDisplay()
    fMidMidPave->SetFillColor(0);
    fMidMidPave->SetTextAlign(13);
    sprintf(textLabel,"ROVDD -- %2.2f,%2.2f,%2.2f,%2.2f",
-	   fTheTargetDataPtr->rovdd[0],
-	   fTheTargetDataPtr->rovdd[1],
-	   fTheTargetDataPtr->rovdd[2],
-	   fTheTargetDataPtr->rovdd[3]);
+	   fTheMultiPtr->targetData[fWhichModule].rovdd[0],
+	   fTheMultiPtr->targetData[fWhichModule].rovdd[1],
+	   fTheMultiPtr->targetData[fWhichModule].rovdd[2],
+	   fTheMultiPtr->targetData[fWhichModule].rovdd[3]);
    fMidMidPave->AddText(textLabel);
    sprintf(textLabel,"Scaler0 -- %3.2f,%3.2f,%3.2f,%3.2f",
-	   fTheTargetDataPtr->scaler[0][0],
-	   fTheTargetDataPtr->scaler[1][0],
-	   fTheTargetDataPtr->scaler[2][0],
-	   fTheTargetDataPtr->scaler[3][0]);
+	   fTheMultiPtr->targetData[fWhichModule].scaler[0][0],
+	   fTheMultiPtr->targetData[fWhichModule].scaler[1][0],
+	   fTheMultiPtr->targetData[fWhichModule].scaler[2][0],
+	   fTheMultiPtr->targetData[fWhichModule].scaler[3][0]);
    fMidMidPave->AddText(textLabel);
    sprintf(textLabel,"Scaler1 -- %3.2f,%3.2f,%3.2f,%3.2f",
-	   fTheTargetDataPtr->scaler[0][0],
-	   fTheTargetDataPtr->scaler[1][1],
-	   fTheTargetDataPtr->scaler[2][1],
-	   fTheTargetDataPtr->scaler[3][1]);
+	   fTheMultiPtr->targetData[fWhichModule].scaler[0][0],
+	   fTheMultiPtr->targetData[fWhichModule].scaler[1][1],
+	   fTheMultiPtr->targetData[fWhichModule].scaler[2][1],
+	   fTheMultiPtr->targetData[fWhichModule].scaler[3][1]);
    fMidMidPave->AddText(textLabel);
    sprintf(textLabel,"Scaler2 -- %3.1f,%3.1f,%3.1f,%3.1f",
-	   fTheTargetDataPtr->scaler[0][2],
-	   fTheTargetDataPtr->scaler[1][2],
-	   fTheTargetDataPtr->scaler[2][2],
-	   fTheTargetDataPtr->scaler[3][2]);
+	   fTheMultiPtr->targetData[fWhichModule].scaler[0][2],
+	   fTheMultiPtr->targetData[fWhichModule].scaler[1][2],
+	   fTheMultiPtr->targetData[fWhichModule].scaler[2][2],
+	   fTheMultiPtr->targetData[fWhichModule].scaler[3][2]);
    fMidMidPave->AddText(textLabel);
    fMidMidPave->Draw();
    fMcpTargetEventInfoPad->cd(4);
@@ -243,28 +246,28 @@ void McpTargetDisplay::refreshEventDisplay()
    fMidRightPave->SetFillColor(0);
    fMidRightPave->SetTextAlign(13);
    sprintf(textLabel,"FB -- %#x,%#x,%#x,%#x",
-	   fTheTargetDataPtr->feedback[0],
-	   fTheTargetDataPtr->feedback[1],
-	   fTheTargetDataPtr->feedback[2],
-	   fTheTargetDataPtr->feedback[3]);
+	   fTheMultiPtr->targetData[fWhichModule].feedback[0],
+	   fTheMultiPtr->targetData[fWhichModule].feedback[1],
+	   fTheMultiPtr->targetData[fWhichModule].feedback[2],
+	   fTheMultiPtr->targetData[fWhichModule].feedback[3]);
    fMidRightPave->AddText(textLabel);
    sprintf(textLabel,"WB -- %d,%d,%d,%d",
-	   fTheTargetDataPtr->wbias[0],
-	   fTheTargetDataPtr->wbias[1],
-	   fTheTargetDataPtr->wbias[2],
-	   fTheTargetDataPtr->wbias[3]);
+	   fTheMultiPtr->targetData[fWhichModule].wbias[0],
+	   fTheMultiPtr->targetData[fWhichModule].wbias[1],
+	   fTheMultiPtr->targetData[fWhichModule].wbias[2],
+	   fTheMultiPtr->targetData[fWhichModule].wbias[3]);
    fMidRightPave->AddText(textLabel);
    sprintf(textLabel,"EnPed -- %d,%d,%d,%d",
-	   fTheTargetDataPtr->enPed[0],
-	   fTheTargetDataPtr->enPed[1],
-	   fTheTargetDataPtr->enPed[2],
-	   fTheTargetDataPtr->enPed[3]);
+	   fTheMultiPtr->targetData[fWhichModule].enPed[0],
+	   fTheMultiPtr->targetData[fWhichModule].enPed[1],
+	   fTheMultiPtr->targetData[fWhichModule].enPed[2],
+	   fTheMultiPtr->targetData[fWhichModule].enPed[3]);
    fMidRightPave->AddText(textLabel);
    sprintf(textLabel,"Term -- %d,%d,%d,%d",
-	   fTheTargetDataPtr->term[0],
-	   fTheTargetDataPtr->term[1],
-	   fTheTargetDataPtr->term[2],
-	   fTheTargetDataPtr->term[3]);
+	   fTheMultiPtr->targetData[fWhichModule].term[0],
+	   fTheMultiPtr->targetData[fWhichModule].term[1],
+	   fTheMultiPtr->targetData[fWhichModule].term[2],
+	   fTheMultiPtr->targetData[fWhichModule].term[3]);
    fMidRightPave->AddText(textLabel);
    fMidRightPave->Draw();
    fMcpTargetEventInfoPad->cd(5);
@@ -275,28 +278,28 @@ void McpTargetDisplay::refreshEventDisplay()
    fFarRightPave->SetFillColor(0);
    fFarRightPave->SetTextAlign(13);
    sprintf(textLabel,"Temp - %3.1f,%3.1f,%3.1f,%3.1fC",
-	   fTheTargetDataPtr->temperature[0],
-	   fTheTargetDataPtr->temperature[1],
-	   fTheTargetDataPtr->temperature[2],
-	   fTheTargetDataPtr->temperature[3]);
+	   fTheMultiPtr->targetData[fWhichModule].temperature[0],
+	   fTheMultiPtr->targetData[fWhichModule].temperature[1],
+	   fTheMultiPtr->targetData[fWhichModule].temperature[2],
+	   fTheMultiPtr->targetData[fWhichModule].temperature[3]);
    fFarRightPave->AddText(textLabel);
    sprintf(textLabel,"Sign -- %d,%d,%d,%d",
-	   fTheTargetDataPtr->sign[0],
-	   fTheTargetDataPtr->sign[1],
-	   fTheTargetDataPtr->sign[2],
-	   fTheTargetDataPtr->sign[3]);
+	   fTheMultiPtr->targetData[fWhichModule].sign[0],
+	   fTheMultiPtr->targetData[fWhichModule].sign[1],
+	   fTheMultiPtr->targetData[fWhichModule].sign[2],
+	   fTheMultiPtr->targetData[fWhichModule].sign[3]);
    fFarRightPave->AddText(textLabel);
    sprintf(textLabel,"PedRowAddr -- %d,%d,%d,%d",
-	   fTheTargetDataPtr->pedRowAddr[0],
-	   fTheTargetDataPtr->pedRowAddr[1],
-	   fTheTargetDataPtr->pedRowAddr[2],
-	   fTheTargetDataPtr->pedRowAddr[3]);
+	   fTheMultiPtr->targetData[fWhichModule].pedRowAddr[0],
+	   fTheMultiPtr->targetData[fWhichModule].pedRowAddr[1],
+	   fTheMultiPtr->targetData[fWhichModule].pedRowAddr[2],
+	   fTheMultiPtr->targetData[fWhichModule].pedRowAddr[3]);
    fFarRightPave->AddText(textLabel);
    sprintf(textLabel,"PedColAddr -- %d,%d,%d,%d",
-	   fTheTargetDataPtr->pedColAddr[0],
-	   fTheTargetDataPtr->pedColAddr[1],
-	   fTheTargetDataPtr->pedColAddr[2],
-	   fTheTargetDataPtr->pedColAddr[3]);
+	   fTheMultiPtr->targetData[fWhichModule].pedColAddr[0],
+	   fTheMultiPtr->targetData[fWhichModule].pedColAddr[1],
+	   fTheMultiPtr->targetData[fWhichModule].pedColAddr[2],
+	   fTheMultiPtr->targetData[fWhichModule].pedColAddr[3]);
    fFarRightPave->AddText(textLabel);
    fFarRightPave->Draw();
    
@@ -360,8 +363,8 @@ void McpTargetDisplay::refreshEventDisplay()
      if(fft[pixel]) delete fft[pixel];
 #endif
 
-     //     std::cerr << fTheTargetDataPtr << "\n";
-     gr[pixel] = fTheTargetDataPtr->getChannel(chan);
+     //     std::cerr << fTheMultiPtr << "\n";
+     gr[pixel] = fTheMultiPtr->getChannel(fWhichModule,chan);
      //     std::cerr << pixel << "\t" << gr[pixel] << "\n";
      wv[pixel] = new WaveformGraph(gr[pixel]);
      //     std::cerr << "Waveform: " << pixel << "\t" << wv[pixel] << "\n";
@@ -452,19 +455,19 @@ int McpTargetDisplay::displayNextEvent()
   Int_t gotEvent=0;
   if(!fOfflineMode) {
     gotEvent=fTheMcpTarget.readEvent();
-    fTheTargetDataPtr=fTheMcpTarget.getTargetData(); //Do not delete
+    fTheMultiPtr=fTheMcpTarget.getTargetData(); //Do not delete
   }
   else {
     //    std::cout << fTheOfflineEntry << "\t" << fTheOfflineTree->GetEntries() << "\n";
     if(fTheOfflineEntry<fTheOfflineTree->GetEntries()) {
       fTheOfflineTree->GetEntry(fTheOfflineEntry);
-      if(fTheTargetDataPtr) 
-	delete fTheTargetDataPtr;
-      //      std::cerr << fTheTargetDataPtr << "\t" <<fTheRawTargetDataPtr << "\n";
-      //      std::cerr << fTheOfflineEntry << "\t" << fTheRawTargetDataPtr->raw[3] << "\n";
-      fTheTargetDataPtr=new TargetData(fTheRawTargetDataPtr);
-      fTheMcpTarget.fillVoltageArray(fTheTargetDataPtr);
-      //      std::cerr << fTheOfflineEntry << "\t" << fTheTargetDataPtr->raw[3] << "\t" << fTheTargetDataPtr->data[0][0][0] << "\t" << fTheTargetDataPtr->fVoltBuffer[0][0][0] <<  "\n";
+      if(fTheMultiPtr) 
+	delete fTheMultiPtr;
+      //      std::cerr << fTheMultiPtr << "\t" <<fTheMultiRawTargetModulesPtr << "\n";
+      //      std::cerr << fTheOfflineEntry << "\t" << fTheMultiRawTargetModulesPtr->raw[3] << "\n";
+      fTheMultiPtr=new MultiTargetModules(fTheMultiRawTargetModulesPtr);
+      fTheMcpTarget.fillVoltageArray(fTheMultiPtr);
+      //      std::cerr << fTheOfflineEntry << "\t" << fTheMultiPtr->raw[3] << "\t" << fTheMultiPtr->data[0][0][0] << "\t" << fTheMultiPtr->fVoltBuffer[0][0][0] <<  "\n";
 
       fTheOfflineEntry++;
       gotEvent=1;
@@ -484,7 +487,7 @@ int McpTargetDisplay::displayPreviousEvent()
   Int_t gotEvent=0;
   if(!fOfflineMode) {
     //    gotEvent=fTheMcpTarget.readEvent();
-    //    fTheTargetDataPtr=fTheMcpTarget.getTargetData(); //Do not delete
+    //    fTheMultiPtr=fTheMcpTarget.getTargetData(); //Do not delete
     return gotEvent;
   }
   else {
@@ -492,13 +495,13 @@ int McpTargetDisplay::displayPreviousEvent()
     if(fTheOfflineEntry>1) {
       fTheOfflineEntry-=2;      
       fTheOfflineTree->GetEntry(fTheOfflineEntry);
-      if(fTheTargetDataPtr) 
-	delete fTheTargetDataPtr;
-      //      std::cerr << fTheTargetDataPtr << "\t" <<fTheRawTargetDataPtr << "\n";
-      //      std::cerr << fTheOfflineEntry << "\t" << fTheRawTargetDataPtr->raw[3] << "\n";
-      fTheTargetDataPtr=new TargetData(fTheRawTargetDataPtr);
-      fTheMcpTarget.fillVoltageArray(fTheTargetDataPtr);
-      //      std::cerr << fTheOfflineEntry << "\t" << fTheTargetDataPtr->raw[3] << "\t" << fTheTargetDataPtr->data[0][0][0] << "\t" << fTheTargetDataPtr->fVoltBuffer[0][0][0] <<  "\n";
+      if(fTheMultiPtr) 
+	delete fTheMultiPtr;
+      //      std::cerr << fTheMultiPtr << "\t" <<fTheMultiRawTargetModulesPtr << "\n";
+      //      std::cerr << fTheOfflineEntry << "\t" << fTheMultiRawTargetModulesPtr->raw[3] << "\n";
+      fTheMultiPtr=new MultiTargetModules(fTheMultiRawTargetModulesPtr);
+      fTheMcpTarget.fillVoltageArray(fTheMultiPtr);
+      //      std::cerr << fTheOfflineEntry << "\t" << fTheMultiPtr->raw[3] << "\t" << fTheMultiPtr->data[0][0][0] << "\t" << fTheMultiPtr->fVoltBuffer[0][0][0] <<  "\n";
 
       fTheOfflineEntry++;
       gotEvent=1;
@@ -524,14 +527,24 @@ void McpTargetDisplay::drawEventButtons() {
   }
 
 
-   TButton *butNext = new TButton("Next ","McpTargetDisplay::Instance()->displayNextEvent();",0.95,0.97,1,1);
-   butNext->SetTextSize(0.5);
-   butNext->SetFillColor(kGreen-10);
-   butNext->Draw();
-   TButton *butPrev = new TButton("Prev. ","McpTargetDisplay::Instance()->displayPreviousEvent();",0.9,0.97,0.95,1);
-   butPrev->SetTextSize(0.5);
-   butPrev->SetFillColor(kRed-10);
-   butPrev->Draw();
+   if(fOfflineMode) {      
+      TButton *butNext = new TButton("> ","McpTargetDisplay::Instance()->displayNextEvent();",0.975,0.97,1,1);
+      butNext->SetTextSize(0.5);
+      butNext->SetFillColor(kGreen-10);
+      butNext->Draw();
+      TButton *butPrev = new TButton("<","McpTargetDisplay::Instance()->displayPreviousEvent();",0.95,0.97,0.975,1);
+      butPrev->SetTextSize(0.5);
+      butPrev->SetFillColor(kRed-10);
+      butPrev->Draw();
+   }
+   else {
+
+      TButton *butNext = new TButton("Next ","McpTargetDisplay::Instance()->displayNextEvent();",0.95,0.97,1,1);
+      butNext->SetTextSize(0.5);
+      butNext->SetFillColor(kGreen-10);
+      butNext->Draw();
+   }
+
    
 
    TButton *butPlay = new TButton("Play","McpTargetDisplay::Instance()->startEventPlaying();",0.95,0.93,1,0.96);
@@ -542,6 +555,12 @@ void McpTargetDisplay::drawEventButtons() {
    butStop->SetTextSize(0.5);
    butStop->SetFillColor(kRed-10);
    butStop->Draw();
+
+   
+   fModuleButton = new TButton("Module","McpTargetDisplay::Instance()->toggleModule();",0.9,0.95,0.95,1);
+   fModuleButton->SetTextSize(0.4);
+   fModuleButton->SetFillColor(kBlue-8);
+   fModuleButton->Draw();
 
 
    //NEW BUTTONS
@@ -556,13 +575,13 @@ void McpTargetDisplay::drawEventButtons() {
    fPowerButton->Draw();
 #endif
 
-   if(!fOfflineMode) {
-     fThresholdSlider = new TSlider("threshSlider","thresh",0.9,0.9,0.95,1);
-     fThresholdSlider->SetMethod("McpTargetDisplay::Instance()->updateThresholdFromSlider();");
-     fThresholdSlider->SetRange(0,0.2);
-     fThresholdSlider->SetEditable(0);
-     updateThreshold(fTheMcpTarget.getTrigThresh());
-   }
+ //   if(!fOfflineMode) {
+//      fThresholdSlider = new TSlider("threshSlider","thresh",0.9,0.9,0.95,1);
+//      fThresholdSlider->SetMethod("McpTargetDisplay::Instance()->updateThresholdFromSlider();");
+//      fThresholdSlider->SetRange(0,0.2);
+//      fThresholdSlider->SetEditable(0);
+//      updateThreshold(fTheMcpTarget.getTrigThresh());
+//    }
 
 }
 
@@ -613,12 +632,12 @@ void McpTargetDisplay::updateThresholdFromSlider()
   //	    << fThresholdSlider->GetMaximum() << "\n";
 
   //0.2, 1  --> Spans range 0,4095
-  Double_t minVal=fThresholdSlider->GetMinimum();
-  Double_t maxVal=fThresholdSlider->GetMaximum();
-  Double_t range=maxVal-minVal;
-  Double_t dThresh=((maxVal-range)/(1.0-range))*4095;
-  UInt_t thresh=(UInt_t)dThresh;
-  updateThreshold(thresh);
+ //  Double_t minVal=fThresholdSlider->GetMinimum();
+//   Double_t maxVal=fThresholdSlider->GetMaximum();
+//   Double_t range=maxVal-minVal;
+//   Double_t dThresh=((maxVal-range)/(1.0-range))*4095;
+//   UInt_t thresh=(UInt_t)dThresh;
+//   updateThreshold(thresh);
 
 }
 
@@ -627,8 +646,8 @@ void McpTargetDisplay::updateThreshold(UInt_t threshold)
   //Threshold thingies
   char textLabel[180];
   sprintf(textLabel,"Threshold: %u",threshold);
-  fThresholdSlider->SetToolTipText(textLabel,0);
-  fTheMcpTarget.setTrigThresh(threshold);
+ //  fThresholdSlider->SetToolTipText(textLabel,0);
+//   fTheMcpTarget.setTrigThresh(threshold);
 }
 
 void McpTargetDisplay::toggleAutoscale() 
@@ -658,4 +677,24 @@ void McpTargetDisplay::setFixedRange()
   fMinScale=(minVal-0.5)*fAbsMaxScale;
   fMaxScale=(maxVal-0.5)*fAbsMaxScale;
   
+
+}
+void McpTargetDisplay::setFixedRange(Double_t minScale,Double_t maxScale) 
+{
+ 
+  
+   fAutoScaleMode=0;
+   fMinScale=minScale;
+   fMaxScale=maxScale;
+   refreshEventDisplay();
+  
+}
+
+void McpTargetDisplay::toggleModule() 
+{
+   int maxModule=MAX_TARGET_MODULES;
+   if(fTheMultiPtr) maxModule=fTheMultiPtr->getNumModules();
+   fWhichModule++;
+   if(fWhichModule>=maxModule) fWhichModule=0;
+   refreshEventDisplay();
 }

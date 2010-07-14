@@ -1,6 +1,7 @@
 #ifndef DEFS
 #define DEFS
 
+#define MAX_TARGET_MODULES    4        // Number of 64 channel target modules
 #define NUM_TARGETS           4        // Number of target chips
 #define NUM_CHANNELS          16       // Number of channels
 #define NUM_TOTAL_CHANNELS    NUM_TARGETS*NUM_CHANNELS //64   

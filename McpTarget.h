@@ -13,8 +13,8 @@
 //rootTarget includes
 #include "Defs.h"
 #include "TargetData.h"
-#include "RawTargetData.h"
-
+#include "MultiTargetModules.h"
+#include "MultiRawTargetModules.h"
 
 
 
@@ -47,15 +47,15 @@ class McpTarget
   //  void getMemAddress(UInt_t memAddrSpace, UInt_t &rowLoc, UInt_t &colLoc,
   //		     UInt_t &pixLoc);
 
-  TGraph *getChannel(Int_t chanInd) 
-  { 
-    return getChannel(chanInd/NUM_CHANNELS,
-		      chanInd%NUM_CHANNELS);
-  }
-  TGraph *getChannel(Int_t chip, Int_t channel);
+ /*  TGraph *getChannel(Int_t chanInd)  */
+/*   {  */
+/*     return getChannel(chanInd/NUM_CHANNELS, */
+/* 		      chanInd%NUM_CHANNELS); */
+/*   } */
+/*   TGraph *getChannel(Int_t chip, Int_t channel); */
 
-  TargetData *getTargetData() {return fTargetDataPtr;}
-  void fillVoltageArray(TargetData *targetDataPtr);
+  MultiTargetModules *getTargetData() {return fMultiTargetPtr;}
+  void fillVoltageArray(MultiTargetModules *multiTargetPtr);
   void openOutputFile(char filename[]);
   void saveOutputFile();
 
@@ -67,7 +67,7 @@ class McpTarget
   Int_t fDumpRawHexData; ///< Whether or not to dump out the raw hex data 
   Int_t fSoftTrigMode; ///< Should we send software triggers before each event?
   Int_t fTermMode; ///< 100, 1k, 10k 
-  Int_t fSampMode; ///< Unclearxs
+  Int_t fSampMode; ///< Unclears
   Int_t fExtTrigMode; ///< On or off
   UInt_t fThresholdValue;
   Int_t fEventNumber; ///< Software event number
@@ -80,8 +80,10 @@ class McpTarget
   Float_t fPedestalValues[NUM_TARGETS][NUM_CHANNELS][NUM_ROWS][NUM_COLS][SAMPLES_PER_COL];
   Float_t fVoltBuffer[NUM_TARGETS][NUM_CHANNELS][SAMPLES_PER_COL];
   Float_t fDNLLookUpTable[4096];
-  TargetData *fTargetDataPtr;
-  RawTargetData *fRawTargetDataPtr;
+  //  TargetData *fTargetDataPtr;
+  MultiRawTargetModules *fRawMultiTargetPtr;
+  MultiTargetModules *fMultiTargetPtr;
+  Int_t fNumTargetModules;
   TFile *fTheOutputFile;
   TTree *fTheOutputTree;
    

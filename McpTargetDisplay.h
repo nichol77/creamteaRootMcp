@@ -15,8 +15,8 @@
 //#include "McpTargetDisplayConventions.h"
 
 #include "McpTarget.h" //The interface class
-#include "TargetData.h" //The data class
-#include "RawTargetData.h" //The data class
+#include "MultiTargetModules.h" //The data class
+#include "MultiRawTargetModules.h" //The data class
 
 class TCanvas;
 class TPad;
@@ -49,9 +49,10 @@ class McpTargetDisplay
   void startEventDisplay(); //these are 
   int displayNextEvent(); // all the
   int displayPreviousEvent(); // all the
-  int displayThisEntry(int entry) {fTheOfflineEntry=entry; displayNextEvent();}
+  int displayThisEntry(int entry) {fTheOfflineEntry=entry; return displayNextEvent();}
   void refreshEventDisplay(); // same
   void toggleView(Int_t view) {fView=view;}
+  void toggleModule();
   void toggleAutoscale();
   int getEventDisplayPlayMode() {return fInEventPlayMode;}
   void setEventDisplayPlayMode(int mode) { fInEventPlayMode=mode;}
@@ -60,6 +61,7 @@ class McpTargetDisplay
   void drawEventButtons();
   void drawZoomButtons();
   void setFixedRange();
+  void setFixedRange(Double_t minVal,Double_t maxVal);
 
   McpTarget *getMcpTargetPointer() {return &(fTheMcpTarget);}
 
@@ -82,6 +84,9 @@ class McpTargetDisplay
    TButton *fWaveformButton;
    TButton *fPowerButton;
 
+   TButton *fModuleButton;
+
+
    TButton *fZoomButton;
    TSlider *fZoomSlider;
    TSlider *fThresholdSlider;
@@ -90,13 +95,14 @@ class McpTargetDisplay
    Int_t fEventPlaySleepMs;
    Int_t fView; //1 is waveforms, 2 is FFTs
    Int_t fAutoScaleMode; //1 is autoscale, 0 is fixed scale
-   Int_t fMinScale; 
-   Int_t fMaxScale;
+   Double_t fMinScale; 
+   Double_t fMaxScale;
    Int_t fAbsMaxScale;
+   Int_t fWhichModule; //0-3
 
    McpTarget fTheMcpTarget;
-   TargetData *fTheTargetDataPtr;
-   RawTargetData *fTheRawTargetDataPtr;
+   MultiTargetModules *fTheMultiPtr;
+   MultiRawTargetModules *fTheMultiRawTargetModulesPtr;
    TFile *fTheOfflineFile;
    TTree *fTheOfflineTree;
    Int_t fOfflineMode;
