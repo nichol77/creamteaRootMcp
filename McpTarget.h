@@ -75,10 +75,10 @@ class McpTarget
   Int_t fNumPedEvents; ///< Number of pedestal events
   UShort_t fBuffer[BUFFERSIZE]; ///< Arbitrarily sized buffer
   UShort_t fReadoutBuffer[BUFFERSIZE+2]; ///<Arbitrarily sized bigger buffer
-  Int_t fPedSubbedBuffer[NUM_TARGETS][NUM_CHANNELS][SAMPLES_PER_COL]; ///<Again who knows or dares to dream
+  //  Int_t fPedSubbedBuffer[MAX_TARGET_MODULES][NUM_TARGETS][NUM_CHANNELS][SAMPLES_PER_COL]; ///<Again who knows or dares to dream
   Float_t fDnlLUT[4096]; ///< No idea what this is, or why it is 4096
-  Float_t fPedestalValues[NUM_TARGETS][NUM_CHANNELS][NUM_ROWS][NUM_COLS][SAMPLES_PER_COL];
-  Float_t fVoltBuffer[NUM_TARGETS][NUM_CHANNELS][SAMPLES_PER_COL];
+  Int_t fPedestalValues[MAX_TARGET_MODULES][NUM_TARGETS][NUM_CHANNELS][NUM_ROWS][NUM_COLS][SAMPLES_PER_COL];
+  //  Float_t fVoltBuffer[MAX_TARGET_MODULES][NUM_TARGETS][NUM_CHANNELS][SAMPLES_PER_COL];
   Float_t fDNLLookUpTable[4096];
   //  TargetData *fTargetDataPtr;
   MultiRawTargetModules *fRawMultiTargetPtr;

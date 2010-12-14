@@ -34,6 +34,11 @@ class TargetData: public RawTargetData
   unsigned int enPed[NUM_TARGETS];  
   float temperature[NUM_TARGETS];//degree C
 
+
+  unsigned int raw_temp[NUM_TARGETS];
+  unsigned int raw_rovdd[NUM_TARGETS];
+  unsigned int raw_scaler[NUM_TARGETS][3];
+
   //This is ridiculous I will RSN (real soon now) move to a calibrated and uncalibrated system, but for now I'll be lazy;
   Float_t fVoltBuffer[NUM_TARGETS][NUM_CHANNELS][SAMPLES_PER_COL];
   
@@ -48,7 +53,7 @@ class TargetData: public RawTargetData
   void unpackMemAddrSpace();
   void unpackFeedback();
 
-  ClassDef(TargetData,3);
+  ClassDef(TargetData,4);
 };
 
 #endif /* TARGETDATA_H */

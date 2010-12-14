@@ -23,12 +23,14 @@ stdUSB fTheUsb;
 McpTarget::McpTarget(int offlineMode) 
    :fDebug(1),fOfflineMode(offlineMode),fExtTrigMode(0),fEventNumber(0),fNumPedEvents(100)
 {
-  for(int chip=0;chip<NUM_TARGETS;chip++) {
-    for(int chan=0;chan<NUM_CHANNELS;chan++) {
-      for(int row=0;row<NUM_ROWS;row++) {
-	for(int col=0;col<NUM_COLS;col++) {
-	  for(int samp=0;samp<SAMPLES_PER_COL;samp++) {
-	    fPedestalValues[chip][chan][row][col][samp]=900;
+  for(int module=0;module<MAX_TARGET_MODULES;module++) {
+    for(int chip=0;chip<NUM_TARGETS;chip++) {
+      for(int chan=0;chan<NUM_CHANNELS;chan++) {
+	for(int row=0;row<NUM_ROWS;row++) {
+	  for(int col=0;col<NUM_COLS;col++) {
+	    for(int samp=0;samp<SAMPLES_PER_COL;samp++) {
+	      fPedestalValues[module][chip][chan][row][col][samp]=900;
+	    }
 	  }
 	}
       }
@@ -57,11 +59,11 @@ McpTarget::McpTarget(int offlineMode)
     fNumTargetModules=fTheUsb.getNumHandles();
     useSyncUsb(0);
 #endif
-    
+    rawSendInt(9); //Force xDONE
     setTermValue(0,1,0);
     enablePedestal(false);
     setPedRowCol(0,0);
-    setTrigPolarity(false); //Falling edge
+    setTrigPolarity(0); //Falling edge  positive or negative??
     setWbias(800); ///< ~1us allegedly
     setTrigThresh(1639); ///< 1.4v
   }
@@ -136,19 +138,21 @@ void McpTarget::generatePedestals()
     std::cerr << "Running in offline mode can't generate pedestals\n";
     return;
   }
-  Double_t *tempValues[NUM_TARGETS][NUM_CHANNELS][NUM_ROWS][NUM_COLS];
-  for(int chip=0;chip<NUM_TARGETS;chip++) {
-    for(int chan=0;chan<NUM_CHANNELS;chan++) {
-      for(int row=0;row<NUM_ROWS;row++) {
-	for(int col=0;col<NUM_COLS;col++) {
-	  tempValues[chip][chan][row][col]= new Double_t [SAMPLES_PER_COL];
-	  for(int samp=0;samp>SAMPLES_PER_COL;samp++)
-	    tempValues[chip][chan][row][col][samp]=0;
+  Double_t *tempValues[MAX_TARGET_MODULES][NUM_TARGETS][NUM_CHANNELS][NUM_ROWS][NUM_COLS];
+  for(int module=0;module<MAX_TARGET_MODULES;module++) {
+    for(int chip=0;chip<NUM_TARGETS;chip++) {
+      for(int chan=0;chan<NUM_CHANNELS;chan++) {
+	for(int row=0;row<NUM_ROWS;row++) {
+	  for(int col=0;col<NUM_COLS;col++) {
+	    tempValues[module][chip][chan][row][col]= new Double_t [SAMPLES_PER_COL];
+	    for(int samp=0;samp>SAMPLES_PER_COL;samp++)
+	      tempValues[module][chip][chan][row][col][samp]=0;
+	  }
 	}
       }
     }
   }
-  Int_t countStuff[NUM_ROWS][NUM_COLS]={{0}};
+  Int_t countStuff[MAX_TARGET_MODULES][NUM_TARGETS][NUM_CHANNELS][NUM_ROWS][NUM_COLS]={{{{{0}}}}};
   
   Int_t row,col;
   TFile *fpTemp = new TFile("pedFile.root","RECREATE");
@@ -156,7 +160,18 @@ void McpTarget::generatePedestals()
   pedTree->Branch("target","MultiRawTargetModules",&fRawMultiTargetPtr);
   //  pedTree->Branch("values",&fReadoutBuffer[0],"values[32810]/s");
   enablePedestal(1);
-  
+  //This but is just pump priming to clear out nonsense buffers
+  setPedRowCol(0,0);
+  sendSoftTrig();
+  justReadBuffer();
+  sendSoftTrig();
+  justReadBuffer();
+  sendSoftTrig();
+  justReadBuffer();
+  sendSoftTrig();
+  justReadBuffer();
+
+
   for(row=0;row<NUM_ROWS;row++) {
     for(col=0;col<NUM_COLS;col+=2) {	
 //  for(row=0;row<1;row++) {
@@ -175,9 +190,9 @@ void McpTarget::generatePedestals()
 	fMultiTargetPtr=&multiTargetData;
 	fRawMultiTargetPtr=&rawTargetData;
 	pedTree->Fill();	
-	countStuff[row][col]++;
 
 	for(int module=0;module<this->fNumTargetModules;module++) {
+
 	   TargetData *fTargetDataPtr=&multiTargetData.targetData[module];
 	   for(int chip=0;chip<NUM_TARGETS;chip++) {
 	      
@@ -187,8 +202,11 @@ void McpTarget::generatePedestals()
 		 std::cerr << "Oops: " << chip << "\t" << row  << "\t" << col << "\t" 
 			   << readRow << "\t" << readCol << "\n";
 	      }
-	      
+
+
 	      for(int chan=0;chan<NUM_CHANNELS;chan++) {
+		countStuff[module][chip][chan][readRow][readCol]++;	      
+	      
 		 for(int samp=0;samp<SAMPLES_PER_COL;samp++) {
 		    
 		    Double_t valueInt=fTargetDataPtr->data[chip][chan][samp];
@@ -202,7 +220,12 @@ void McpTarget::generatePedestals()
 		    // 	      }
 		    
 		    Float_t value=(Float_t)fTargetDataPtr->data[chip][chan][samp];
-		    tempValues[chip][chan][row][col][samp]+=value;
+		    tempValues[module][chip][chan][readRow][readCol][samp]+=value;
+		    if(value>1600) {
+		      std::cout << module << "\t" << chip << "\t"
+				<< chan << "\t" << readRow << "\t" << readCol
+				<< "\t" << samp << "\t" << value << "\n";
+		    }
 		 }
 	      }
 	   }
@@ -214,25 +237,26 @@ void McpTarget::generatePedestals()
   }
   
   std::ofstream PedFile("pedestal.txt");
-  for(int chip=0;chip<NUM_TARGETS;chip++) {
-    for(int chan=0;chan<NUM_CHANNELS;chan++) {
-      for(int row=0;row<NUM_ROWS;row++) {
-	for(int col=0;col<NUM_COLS;col++) {
-	  for(int samp=0;samp<SAMPLES_PER_COL;samp++) {
-	    if(countStuff[row][col]>0) {
-	      tempValues[chip][chan][row][col][samp]/=countStuff[row][col];
-	      fPedestalValues[chip][chan][row][col][samp]=(Int_t)tempValues[chip][chan][row][col][samp];
-	      if(chip==0 && chan==0 && row==0 && col==0 && samp==0)
-		std::cout << fPedestalValues[chip][chan][row][col][samp] << "\n";
+  for(int module=0;module<MAX_TARGET_MODULES;module++) {
+    for(int chip=0;chip<NUM_TARGETS;chip++) {
+      for(int chan=0;chan<NUM_CHANNELS;chan++) {
+	for(int row=0;row<NUM_ROWS;row++) {
+	  for(int col=0;col<NUM_COLS;col+=2) {
+	    for(int samp=0;samp<SAMPLES_PER_COL;samp++) {
+	      if(countStuff[module][chip][chan][row][col]>0) {
+		tempValues[module][chip][chan][row][col][samp]/=countStuff[module][chip][chan][row][col];
+		fPedestalValues[module][chip][chan][row][col][samp]=(Int_t)tempValues[module][chip][chan][row][col][samp];
+		//	      if(chip==0 && chan==0 && row==0 && col==0 && samp==0)
+		//		std::cout << fPedestalValues[chip][chan][row][col][samp] << "\n";
+	      }
+	      PedFile << fPedestalValues[module][chip][chan][row][col][samp] << "\n";
 	    }
-	    PedFile << fPedestalValues[chip][chan][row][col][samp] << "\n";
+	    delete [] tempValues[module][chip][chan][row][col];
 	  }
-	  delete [] tempValues[chip][chan][row][col];
 	}
-      }
-    } 
+      } 
+    }
   }
-
         
   pedTree->AutoSave();
   //  delete fpTemp;
@@ -316,19 +340,20 @@ void McpTarget::fillVoltageArray(MultiTargetModules *multiTargetDataPtr)
 	// 	std::cerr << row << "\t" << col << "\t" << NUM_ROWS << "\t"
 	       // 		  << NUM_COLS << "\n";
 	       // 	std::cerr << fPedestalValues[chip][chan][row][col][samp] << "\n";
-	       if(chip==3 && chan==11 && samp==160) {
-		  //  if(targetDataPtr->raw[1]==32768) {
-		  if(row==2 && col==28) {
-		     std::cout << chip << "\t" << chan << "\t" << row << "\t" << col << "\t"
-			       << samp << "\t" << value << "\t" << fPedestalValues[chip][chan][row][col][samp]
-			       << "\n";
-		  }
-	       }
+	     //   if(chip==3 && chan==11 && samp==160) {
+// 		  //  if(targetDataPtr->raw[1]==32768) {
+// 		  if(row==2 && col==28) {
+// 		     std::cout << chip << "\t" << chan << "\t" << row << "\t" << col << "\t"
+// 			       << samp << "\t" << value << "\t" << fPedestalValues[chip][chan][row][col][samp]
+// 			       << "\n";
+// 		  }
+// 	       }
 	       
-	       value-=fPedestalValues[chip][chan][row][col][samp]; 
+	       //RJN hack 17/07/10
+	       //	       value-=900;
+	       value-=fPedestalValues[module][chip][chan][row][col][samp]; 
 	       
 
-	       fVoltBuffer[chip][chan][samp]=value;
 	       targetDataPtr->fVoltBuffer[chip][chan][samp]=value;
 	       //	exit(0);
 	       //DNL_LUT.txt 
@@ -376,15 +401,20 @@ void McpTarget::loadPedestal()
   if(!PedFile.is_open()) {
     PedFile.open("defaultPed.txt");
   }
+  else {
+     std::cout << "Read pedestal.txt\n";
+  }
     
   if(PedFile.is_open()) {
-    for(int chip=0;chip<NUM_TARGETS;chip++) {
-      for(int chan=0;chan<NUM_CHANNELS;chan++) {
-	for(int row=0;row<NUM_ROWS;row++) {
-	  for(int col=0;col<NUM_COLS;col++) {
-	    for(int samp=0;samp<SAMPLES_PER_COL;samp++) {
-	      PedFile >> value;
-	      fPedestalValues[chip][chan][row][col][samp]=value;
+    for(int module=0;module<MAX_TARGET_MODULES;module++) {
+      for(int chip=0;chip<NUM_TARGETS;chip++) {
+	for(int chan=0;chan<NUM_CHANNELS;chan++) {
+	  for(int row=0;row<NUM_ROWS;row++) {
+	    for(int col=0;col<NUM_COLS;col+=2) {
+	      for(int samp=0;samp<SAMPLES_PER_COL;samp++) {
+		PedFile >> value;
+		fPedestalValues[module][chip][chan][row][col][samp]=value;
+	      }
 	    }
 	  }
 	}

@@ -39,16 +39,16 @@ void createOfflineFile() {
   TStopwatch stopy;
   stopy.Start();
 
-  Int_t numEvents=10000;
+  Int_t numEvents=1000;
 
-  myTarget->setSoftTrigMode(1);
-  myTarget->enablePedestal(1);
+  myTarget->setSoftTrigMode(0);
+  //  myTarget->enablePedestal(1);
   for(int i=0;i<numEvents;i++) {
-    myTarget->setPedRowCol(0,0);        
+     //    myTarget->setPedRowCol(0,0);        
     //    if(i%100==0) 
     std::cerr << "*";
     myTarget->readEvent();
-    gSystem->Sleep(1000);
+    //    gSystem->Sleep(1000);
   }
   stopy.Stop();
   std::cerr << "\n";

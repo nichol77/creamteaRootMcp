@@ -87,6 +87,7 @@ McpTargetDisplay::McpTargetDisplay(int offlineMode,TFile *inputFile)
 
 McpTargetDisplay::~McpTargetDisplay()
 {
+   std::cout << "McpTargetDisplay::~McpTargetDisplay()\n";
 }
 
 
@@ -213,30 +214,53 @@ void McpTargetDisplay::refreshEventDisplay()
    fMidMidPave->SetBorderSize(0);
    fMidMidPave->SetFillColor(0);
    fMidMidPave->SetTextAlign(13);
-   sprintf(textLabel,"ROVDD -- %2.2f,%2.2f,%2.2f,%2.2f",
-	   fTheMultiPtr->targetData[fWhichModule].rovdd[0],
-	   fTheMultiPtr->targetData[fWhichModule].rovdd[1],
-	   fTheMultiPtr->targetData[fWhichModule].rovdd[2],
-	   fTheMultiPtr->targetData[fWhichModule].rovdd[3]);
+  //  sprintf(textLabel,"ROVDD -- %2.2f,%2.2f,%2.2f,%2.2f",
+// 	   fTheMultiPtr->targetData[fWhichModule].rovdd[0],
+// 	   fTheMultiPtr->targetData[fWhichModule].rovdd[1],
+// 	   fTheMultiPtr->targetData[fWhichModule].rovdd[2],
+// 	   fTheMultiPtr->targetData[fWhichModule].rovdd[3]);
+   sprintf(textLabel,"ROVDD -- %#x %#x %#x %#x",
+	   fTheMultiPtr->targetData[fWhichModule].raw_rovdd[0],
+	   fTheMultiPtr->targetData[fWhichModule].raw_rovdd[1],
+	   fTheMultiPtr->targetData[fWhichModule].raw_rovdd[2],
+	   fTheMultiPtr->targetData[fWhichModule].raw_rovdd[3]);
    fMidMidPave->AddText(textLabel);
-   sprintf(textLabel,"Scaler0 -- %3.2f,%3.2f,%3.2f,%3.2f",
-	   fTheMultiPtr->targetData[fWhichModule].scaler[0][0],
-	   fTheMultiPtr->targetData[fWhichModule].scaler[1][0],
-	   fTheMultiPtr->targetData[fWhichModule].scaler[2][0],
-	   fTheMultiPtr->targetData[fWhichModule].scaler[3][0]);
+   sprintf(textLabel,"Scaler0 -- %u,%u,%u,%u",
+	   fTheMultiPtr->targetData[fWhichModule].raw_scaler[0][0],
+	   fTheMultiPtr->targetData[fWhichModule].raw_scaler[1][0],
+	   fTheMultiPtr->targetData[fWhichModule].raw_scaler[2][0],
+	   fTheMultiPtr->targetData[fWhichModule].raw_scaler[3][0]);
    fMidMidPave->AddText(textLabel);
-   sprintf(textLabel,"Scaler1 -- %3.2f,%3.2f,%3.2f,%3.2f",
-	   fTheMultiPtr->targetData[fWhichModule].scaler[0][0],
-	   fTheMultiPtr->targetData[fWhichModule].scaler[1][1],
-	   fTheMultiPtr->targetData[fWhichModule].scaler[2][1],
-	   fTheMultiPtr->targetData[fWhichModule].scaler[3][1]);
+   sprintf(textLabel,"Scaler1 -- %u,%u,%u,%u",
+	   fTheMultiPtr->targetData[fWhichModule].raw_scaler[0][0],
+	   fTheMultiPtr->targetData[fWhichModule].raw_scaler[1][1],
+	   fTheMultiPtr->targetData[fWhichModule].raw_scaler[2][1],
+	   fTheMultiPtr->targetData[fWhichModule].raw_scaler[3][1]);
    fMidMidPave->AddText(textLabel);
-   sprintf(textLabel,"Scaler2 -- %3.1f,%3.1f,%3.1f,%3.1f",
-	   fTheMultiPtr->targetData[fWhichModule].scaler[0][2],
-	   fTheMultiPtr->targetData[fWhichModule].scaler[1][2],
-	   fTheMultiPtr->targetData[fWhichModule].scaler[2][2],
-	   fTheMultiPtr->targetData[fWhichModule].scaler[3][2]);
+   sprintf(textLabel,"Scaler2 -- %u,%u,%u,%u",
+	   fTheMultiPtr->targetData[fWhichModule].raw_scaler[0][2],
+	   fTheMultiPtr->targetData[fWhichModule].raw_scaler[1][2],
+	   fTheMultiPtr->targetData[fWhichModule].raw_scaler[2][2],
+	   fTheMultiPtr->targetData[fWhichModule].raw_scaler[3][2]);
    fMidMidPave->AddText(textLabel);
+//    sprintf(textLabel,"Scaler0 -- %3.2f,%3.2f,%3.2f,%3.2f",
+// 	   fTheMultiPtr->targetData[fWhichModule].scaler[0][0],
+// 	   fTheMultiPtr->targetData[fWhichModule].scaler[1][0],
+// 	   fTheMultiPtr->targetData[fWhichModule].scaler[2][0],
+// 	   fTheMultiPtr->targetData[fWhichModule].scaler[3][0]);
+//    fMidMidPave->AddText(textLabel);
+//    sprintf(textLabel,"Scaler1 -- %3.2f,%3.2f,%3.2f,%3.2f",
+// 	   fTheMultiPtr->targetData[fWhichModule].scaler[0][0],
+// 	   fTheMultiPtr->targetData[fWhichModule].scaler[1][1],
+// 	   fTheMultiPtr->targetData[fWhichModule].scaler[2][1],
+// 	   fTheMultiPtr->targetData[fWhichModule].scaler[3][1]);
+//    fMidMidPave->AddText(textLabel);
+//    sprintf(textLabel,"Scaler2 -- %3.1f,%3.1f,%3.1f,%3.1f",
+// 	   fTheMultiPtr->targetData[fWhichModule].scaler[0][2],
+// 	   fTheMultiPtr->targetData[fWhichModule].scaler[1][2],
+// 	   fTheMultiPtr->targetData[fWhichModule].scaler[2][2],
+// 	   fTheMultiPtr->targetData[fWhichModule].scaler[3][2]);
+//    fMidMidPave->AddText(textLabel);
    fMidMidPave->Draw();
    fMcpTargetEventInfoPad->cd(4);
    if(fMidRightPave) delete fMidRightPave;

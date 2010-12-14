@@ -39,6 +39,7 @@ void runTargetDisplay() {
   McpTarget *targetPtr = displayPtr->getMcpTargetPointer();
   targetPtr->openOutputFile(outName);
   targetPtr->setSoftTrigMode(1);
-  displayPtr->startEventDisplay();
+  targetPtr->setTrigThresh(2300);
+  displayPtr->startEventDisplay();  
   
 }
