@@ -12,11 +12,13 @@ StdUSB libusb implementation used here uses same function interface with native 
 #include "stdUSB.h"
 
 stdUSB::stdUSB(void) {
+   printf("stdUSB::stdUSB()\n");
     stdUSB::stdHandle = INVALID_HANDLE_VALUE;
     //    createHandles();
 }
 
 stdUSB::~stdUSB(void) {
+   printf("stdUSB::~stdUSB()\n");
     if(stdHandle != INVALID_HANDLE_VALUE)
         freeHandle();
 }
@@ -27,7 +29,8 @@ stdUSB::~stdUSB(void) {
  * @param  
  * @return bool -- SUCCEED or FAILED
  */
-bool stdUSB::createHandles(void) {
+bool stdUSB::createHandles(void) {   
+   printf("stdUSB::createHandles()\n");
     int retval;
     struct usb_device *dev;
    
@@ -41,7 +44,9 @@ bool stdUSB::createHandles(void) {
       printf("stdUSB::init() %d %s\n",retval,strerror(-1*retval));
       goto fail;
     }
+    printf("stdHandle = %d\tdev = %d\n",stdHandle, dev);
     stdHandle = usb_open(dev);
+    printf("stdHandle = %d\tdev = %d\n",stdHandle,dev);
     if (stdHandle == INVALID_HANDLE_VALUE) {
         printf("usb_open(dev) fail\n");
         goto fail;
@@ -85,6 +90,7 @@ fail:
  * @return usb_device* -- A pointer to USBFX2 libusb dev entry, or INVALID_HANDLE_VALUE on failure.
  */
 struct usb_device* stdUSB::init(void) {
+   printf("init()\n");
     struct usb_bus *usb_bus;
     struct usb_device *dev;
 
@@ -116,6 +122,7 @@ struct usb_device* stdUSB::init(void) {
  */
 bool stdUSB::freeHandle(void) //throw(...)
 {
+   printf("stdUSB::freeHandle()\n");
     /* release interface */
     int retval = usb_release_interface(stdHandle, USBFX2_INTFNO);
     if (retval != 0)
@@ -131,6 +138,7 @@ bool stdUSB::freeHandle(void) //throw(...)
 }
 
 bool stdUSB::freeHandles(void) {
+   printf("stdUSB::freeHandles()\n");
     // this function exits just because there is no reason
     // to open and close handle all time
     return SUCCEED;
@@ -143,6 +151,8 @@ bool stdUSB::freeHandles(void) {
  */
 bool stdUSB::sendData(unsigned int data)// throw(...)
 {
+
+   printf("stdUSB::sendData()\n");
     /* Shifted right because send value needs to be in HEX base. char[4] ^= int (char -> 1byte, int -> 4 bytes)*/
     char buff[4];
     buff[0] = data;
@@ -175,6 +185,7 @@ bool stdUSB::sendData(unsigned int data)// throw(...)
  */
 bool stdUSB::readData(unsigned short * pData, int l, int* lread)// throw(...)
 {
+   printf("stdUSB::readData()\n");
     int buff_sz = l*sizeof(unsigned short);
     //char* buff = new char[110];
     //buff_sz = 110;

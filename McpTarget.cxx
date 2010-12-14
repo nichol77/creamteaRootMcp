@@ -316,7 +316,7 @@ void McpTarget::fillVoltageArray(TargetData *targetDataPtr)
 	  }
 	}
 
-	value-=fPedestalValues[chip][chan][row][col][samp]; 
+	//	value-=fPedestalValues[chip][chan][row][col][samp]; 
 	
 
 	fVoltBuffer[chip][chan][samp]=value;
@@ -326,7 +326,7 @@ void McpTarget::fillVoltageArray(TargetData *targetDataPtr)
       }
     }
   }
-  //  targetDataPtr->commonModeCorrection();
+  //    targetDataPtr->commonModeCorrection();
 }
 
 
