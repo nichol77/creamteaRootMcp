@@ -7,6 +7,8 @@
 #pragma link C++ class McpTarget+;
 #pragma link C++ class TargetData+;
 #pragma link C++ class RawTargetData+;
+#pragma link C++ class MultiTargetModules+;
+#pragma link C++ class MultiRawTargetModules+;
 #pragma link C++ class McpTargetDisplay+;
 #pragma link C++ class WaveformGraph+;
 #pragma link C++ class FFTGraph+;
