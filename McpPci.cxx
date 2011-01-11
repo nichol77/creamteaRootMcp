@@ -100,7 +100,7 @@ bool McpPci::readData(unsigned short * pData, int length, int* lread)
       pData[i]=bigBuffer[i+startWord]&0xffffffff;
     }
     countTries++;
-    if(countTries>10) {
+    if(countTries>50) {
       fprintf(stderr,"Tried to read too many times, giving up.\n");
       return FAILED;
     }

@@ -10,6 +10,8 @@ class RawTargetData: public TObject
   RawTargetData();
   RawTargetData(unsigned short rawData[BUFFERSIZE]);
   ~RawTargetData();  
+  void setRawBuffer(unsigned short rawData[BUFFERSIZE]);
+  void setRawBuffer(unsigned int rawData[BUFFERSIZE]);
 
   unsigned int raw[BUFFERSIZE]; 
   ClassDef(RawTargetData,3); //Need to update to 2 when switch to 64

@@ -26,9 +26,6 @@ TargetData::TargetData(unsigned short rawData[])
 /////////////////////////////////////////////////////////
 void TargetData::unpackData()
 {  
-  unsigned int raw_temp[NUM_TARGETS];
-  unsigned int raw_rovdd[NUM_TARGETS];
-  unsigned int raw_scaler[NUM_TARGETS][3];
   //#ifdef READOUT_MCP_CPCI
   //  int count = 9;
   //#else
