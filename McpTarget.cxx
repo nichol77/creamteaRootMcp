@@ -360,7 +360,7 @@ void McpTarget::fillVoltageArray(MultiTargetModules *multiTargetDataPtr)
 	    }
 	 }
       }
-      targetDataPtr->commonModeCorrection();
+      //      targetDataPtr->commonModeCorrection();
    }
 }
 

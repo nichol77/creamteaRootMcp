@@ -86,6 +86,9 @@ void TargetData::unpackMemAddrSpace()
     const unsigned int MASK_COL = 0x000001F0;
     const unsigned int MASK_HITBIT = 0x00008000;
     for(int chip=0;chip<NUM_TARGETS;chip++) {
+       std::cout << std::hex << memAddrSpace[chip] << std::endl;
+       std::cout << std::dec << chip << "\n";
+
       rowLoc[chip] = memAddrSpace[chip] & MASK_ROW;
       rowLoc[chip] = rowLoc[chip] >> 9;
     

@@ -376,8 +376,8 @@ void McpTargetDisplay::refreshEventDisplay()
    //   Double_t maxFreq=500;
    for(int pixel=0;pixel<NUM_TOTAL_CHANNELS;pixel++) {
       //      RJN change 28/04010
-      Int_t chan=pixel;
-      //     Int_t chan=pmtPixelToChan[pixel];
+      //      Int_t chan=pixel;
+      Int_t chan=pmtPixelToChan[pixel];
      //     std::cerr << pixel << "\t" << chan << "\n";
      sprintf(graphName,"Pixel %d",pixel+1);
      if(gr[pixel]) delete gr[pixel];
