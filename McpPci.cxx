@@ -83,7 +83,7 @@ bool McpPci::readData(unsigned short * pData, int length, int* lread)
   if(!fTheFd) createHandles();
   static  unsigned int bigBuffer[100000];
   int newLength = length + 40;
-  int startWord = 1;
+  int startWord = 2;
   int retval;  
   retval = 0;
   int countTries=0;

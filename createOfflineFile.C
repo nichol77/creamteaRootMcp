@@ -39,7 +39,7 @@ void createOfflineFile() {
   TStopwatch stopy;
   stopy.Start();
 
-  Int_t numEvents=10000;
+  Int_t numEvents=10;
 
   myTarget->setSoftTrigMode(1);
   myTarget->enablePedestal(1);

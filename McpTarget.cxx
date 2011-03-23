@@ -50,6 +50,10 @@ McpTarget::McpTarget(int offlineMode)
     std::cerr << "Trying to setup something\n";
 #ifdef READOUT_MCP_CPCI
     fThePci.sendData(CLEAR_EVENT_CPCI_BOARD_MASK);
+    //Need someway of working out how many modules are attached the to the cPCI card
+    fNumTargetModules=1;
+
+
 #else
     
     if (fTheUsb.createHandles() != true) {
@@ -293,7 +297,9 @@ int McpTarget::readEvent()
   if(retVal<0) {
     return -1;
   }
-  
+
+  //  std::cerr << "fNumTargetModules " << fNumTargetModules <<"\n";
+
   if(fMultiTargetPtr)
      delete fMultiTargetPtr;  
   fMultiTargetPtr = new MultiTargetModules(fNumTargetModules,fReadoutBuffer);
