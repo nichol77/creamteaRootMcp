@@ -173,7 +173,7 @@ void McpTarget::generatePedestals()
 
 
   for(row=0;row<NUM_ROWS;row++) {
-    for(col=0;col<NUM_COLS;col+=2) {	
+    for(col=0;col<NUM_COLS;col++) {	
 //  for(row=0;row<1;row++) {
 //    for(col=0;col<1;col++) {	
       setPedRowCol(row,col);      
@@ -209,23 +209,14 @@ void McpTarget::generatePedestals()
 	      
 		 for(int samp=0;samp<SAMPLES_PER_COL;samp++) {
 		    
-		    Double_t valueInt=fTargetDataPtr->data[chip][chan][samp];
-		    
-		    // 	      if(chip==0 && chan==0 && samp==0) {
-		    // 		if(targetData.raw[1]==32768) {
-		    // 		  std::cout << chip << "\t" << chan << "\t" << row << "\t" << col << "\t"
-		    // 			    << samp << "\t" << valueInt << "\t" << fPedestalValues[chip][chan][row][col][samp]
-		    // 			    << "\n";
-		    // 		}
-		    // 	      }
 		    
 		    Float_t value=(Float_t)fTargetDataPtr->data[chip][chan][samp];
 		    tempValues[module][chip][chan][readRow][readCol][samp]+=value;
-		    if(value>1600) {
-		      std::cout << module << "\t" << chip << "\t"
-				<< chan << "\t" << readRow << "\t" << readCol
-				<< "\t" << samp << "\t" << value << "\n";
-		    }
+		    // if(value>1600) {
+// 		      std::cout << module << "\t" << chip << "\t"
+// 				<< chan << "\t" << readRow << "\t" << readCol
+// 				<< "\t" << samp << "\t" << value << "\n";
+// 		    }
 		 }
 	      }
 	   }
@@ -241,7 +232,7 @@ void McpTarget::generatePedestals()
     for(int chip=0;chip<NUM_TARGETS;chip++) {
       for(int chan=0;chan<NUM_CHANNELS;chan++) {
 	for(int row=0;row<NUM_ROWS;row++) {
-	  for(int col=0;col<NUM_COLS;col+=2) {
+	  for(int col=0;col<NUM_COLS;col++) {
 	    for(int samp=0;samp<SAMPLES_PER_COL;samp++) {
 	      if(countStuff[module][chip][chan][row][col]>0) {
 		tempValues[module][chip][chan][row][col][samp]/=countStuff[module][chip][chan][row][col];
@@ -351,12 +342,21 @@ void McpTarget::fillVoltageArray(MultiTargetModules *multiTargetDataPtr)
 	       
 	       //RJN hack 17/07/10
 	       //	       value-=900;
-	       value-=fPedestalValues[module][chip][chan][row][col][samp]; 
 	       
+	       if(value>0 && value<4096 && samp>1 && samp<511) 
+		 value-=fPedestalValues[module][chip][chan][row][col][samp]; 
+	       else
+		 value=0; ///RJN hack
+
+	       if(TMath::Abs(value)>200) {
+		 //		 std::cerr << module << "\t" << chip << "\t" << chan << "\t" << row << "\t" << col << "\t" << samp
+		 //			   << "\t" << targetDataPtr->data[chip][chan][samp] << "\t" 
+		 //			   << fPedestalValues[module][chip][chan][row][col][samp] << "\n";
+	       }
+
 
 	       targetDataPtr->fVoltBuffer[chip][chan][samp]=value;
-	       //	exit(0);
-	       //DNL_LUT.txt 
+
 	    }
 	 }
       }
@@ -397,12 +397,15 @@ void McpTarget::loadPedestal()
 {
   Int_t value;
   std::ifstream PedFile;
-  PedFile.open("pedestal.txt");
+  PedFile.open("calib/pedFile.txt");
   if(!PedFile.is_open()) {
-    PedFile.open("defaultPed.txt");
+    PedFile.open("/home/creamtea/rootMcp/branches/multiusb/calib/pedFile.txt");
+    if(PedFile.is_open()) {
+      std::cout << "Reading /home/creamtea/rootMcp/branches/multiusb/calib/pedFile.txt\n";
+    }
   }
   else {
-     std::cout << "Read pedestal.txt\n";
+     std::cout << "Reading calib/pedFile.txt\n";
   }
     
   if(PedFile.is_open()) {
@@ -410,9 +413,12 @@ void McpTarget::loadPedestal()
       for(int chip=0;chip<NUM_TARGETS;chip++) {
 	for(int chan=0;chan<NUM_CHANNELS;chan++) {
 	  for(int row=0;row<NUM_ROWS;row++) {
-	    for(int col=0;col<NUM_COLS;col+=2) {
+	    for(int col=0;col<NUM_COLS;col++) {
 	      for(int samp=0;samp<SAMPLES_PER_COL;samp++) {
 		PedFile >> value;
+		
+
+		if(value==0) value=900;
 		fPedestalValues[module][chip][chan][row][col][samp]=value;
 	      }
 	    }

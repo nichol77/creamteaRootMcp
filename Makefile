@@ -50,8 +50,8 @@ GLIBS         = $(ROOTGLIBS) $(SYSLIBS)
 
 #Now the bits we're actually compiling
 ROOT_LIBRARY = libMcpTargetRoot.${DLLSUF}
-LIB_OBJS =  McpTarget.o McpTargetDisplay.o WaveformGraph.o FFTGraph.o  TargetData.o RawTargetData.o MultiTargetModules.o  MultiRawTargetModules.o targetDict.o
-CLASS_HEADERS = McpTarget.h McpTargetDisplay.h WaveformGraph.h FFTGraph.h TargetData.h RawTargetData.h MultiTargetModules.h MultiRawTargetModules.h
+LIB_OBJS =  McpTarget.o McpTargetDisplay.o WaveformGraph.o FFTGraph.o  TargetData.o RawTargetData.o MultiTargetModules.o  MultiRawTargetModules.o CreamTeaPmtHit.o CreamTeaHitEvent.o targetDict.o
+CLASS_HEADERS = McpTarget.h McpTargetDisplay.h WaveformGraph.h FFTGraph.h TargetData.h RawTargetData.h MultiTargetModules.h MultiRawTargetModules.h CreamTeaPmtHit.h CreamTeaHitEvent.h
 
 
 
@@ -64,7 +64,7 @@ CLASS_HEADERS +=  McpPci.h
 LIB_OBJS += McpPci.o
 endif
 
-all : $(ROOT_LIBRARY)
+all : $(ROOT_LIBRARY) makeHitTree
 
 
 #The library
@@ -93,6 +93,10 @@ endif
 	@echo "<**Compiling**> "$<
 	$(CXX) $(CXXFLAGS) $ -c $< -o  $@
 
+% :  %.$(SRCSUF)
+	@echo "<**Linking**> "  
+	$(LD)  $(CXXFLAGS) $(LDFLAGS) $(ROOT_LIBRARY) $<  $(LIBS) -o $@
+
 
 targetDict.C: $(CLASS_HEADERS)
 	@echo "Generating dictionary ..."
@@ -110,6 +114,7 @@ endif
 	install -c -m 644  $(CLASS_HEADERS) $(RJN_UTIL_INC_DIR)
 
 clean:
+	@rm -f makeHitTree
 	@rm -f *Dict*
 	@rm -f *.${OBJSUF}
 	@rm -f $(LIBRARY)

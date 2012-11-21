@@ -34,7 +34,7 @@ class McpTarget
   void loadDnlLookUpTable();
   Int_t readEvent();
   Int_t justReadBuffer();
-  void setExtTrigMode(Int_t mode);
+  void setExtTrigMode(Int_t mode) {fExtTrigMode=mode;}
   void useSyncUsb(Int_t flag);
   void sendSoftTrig();
   void setPedRowCol(Int_t row, Int_t col);

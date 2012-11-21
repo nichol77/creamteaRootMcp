@@ -46,6 +46,39 @@ Int_t chanToPmtPixel[64]={7,8,6,9,5,10,4,11,3,12,2,
 Int_t pmtPixelToChan[64]={14,12,10,8,6,4,2,0,1,3,5,7,9,11,13,15,30,28,26,24,22,20,18,16,17,19,21,23,25,27,29,31,32,34,36,38,40,42,44,46,47,45,43,41,39,37,35,33,48,50,52,54,56,58,60,62,63,61,59,57,55,53,51,49};
 
 
+TGraph *getBoxCar(TGraph *grWave, Int_t halfWidth) 
+{
+  //Just do this the lazy way for now
+  Double_t *inY = grWave->GetY();
+  Double_t *inX = grWave->GetX();
+  Int_t length=grWave->GetN();
+  Double_t *smoothY = new Double_t[length];
+  for(int i=0;i<length;i++) {
+    smoothY[i]=0;
+    if(i<halfWidth || length-i<=halfWidth) {
+      int countVals=0;
+      for(int j=i-halfWidth;j<=i+halfWidth;j++) {
+	if(j>=0 && j<length) {
+	  smoothY[i]+=inY[j];
+	  countVals++;
+	}
+      }
+      //      cout << i << "\t" << countVals << endl;
+      smoothY[i]/=countVals;
+    }
+    else {
+      for(int j=i-halfWidth;j<=i+halfWidth;j++) {
+	smoothY[i]+=inY[j];
+      }
+      smoothY[i]/=1+2*halfWidth;
+    }      
+  }
+  TGraph *grSmooth = new TGraph(length,inX,smoothY);
+  delete [] smoothY;
+  return grSmooth;
+  
+}
+
 
 
 McpTargetDisplay*  McpTargetDisplay::fgInstance = 0;
@@ -376,8 +409,8 @@ void McpTargetDisplay::refreshEventDisplay()
    //   Double_t maxFreq=500;
    for(int pixel=0;pixel<NUM_TOTAL_CHANNELS;pixel++) {
       //      RJN change 28/04010
-      //      Int_t chan=pixel;
-      Int_t chan=pmtPixelToChan[pixel];
+     Int_t chan=pixel;
+     //      Int_t chan=pmtPixelToChan[pixel];
      //     std::cerr << pixel << "\t" << chan << "\n";
      sprintf(graphName,"Pixel %d",pixel+1);
      if(gr[pixel]) delete gr[pixel];
@@ -388,7 +421,9 @@ void McpTargetDisplay::refreshEventDisplay()
 #endif
 
      //     std::cerr << fTheMultiPtr << "\n";
-     gr[pixel] = fTheMultiPtr->getChannel(fWhichModule,chan);
+     TGraph *grTemp =fTheMultiPtr->getChannel(fWhichModule,chan);
+     gr[pixel] = getBoxCar(grTemp,3);
+     delete grTemp;
      //     std::cerr << pixel << "\t" << gr[pixel] << "\n";
      wv[pixel] = new WaveformGraph(gr[pixel]);
      //     std::cerr << "Waveform: " << pixel << "\t" << wv[pixel] << "\n";

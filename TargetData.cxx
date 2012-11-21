@@ -86,8 +86,8 @@ void TargetData::unpackMemAddrSpace()
     const unsigned int MASK_COL = 0x000001F0;
     const unsigned int MASK_HITBIT = 0x00008000;
     for(int chip=0;chip<NUM_TARGETS;chip++) {
-       std::cout << std::hex << memAddrSpace[chip] << std::endl;
-       std::cout << std::dec << chip << "\n";
+      //       std::cout << std::hex << memAddrSpace[chip] << std::endl;
+      //       std::cout << std::dec << chip << "\n";
 
       rowLoc[chip] = memAddrSpace[chip] & MASK_ROW;
       rowLoc[chip] = rowLoc[chip] >> 9;
@@ -138,6 +138,8 @@ TGraph *TargetData::getChannel(int chip, int channel)
      timeVals[samp]=Double_t(samp); //Should multiple by delta t here
      voltVals[samp]=fVoltBuffer[chip][channel][samp];
   }
+  //  std::cout << "getChannel " << chip << "\t" << channel << "\n";
+
   TGraph *gr = new TGraph(SAMPLES_PER_COL,timeVals,voltVals);
   return gr;
 }
@@ -147,16 +149,21 @@ void TargetData::commonModeCorrection()
 {
    
   for(int chip=0;chip<NUM_TARGETS;chip++) {
-     for(int samp=0;samp<SAMPLES_PER_COL;samp++)  {
-	Double_t meanVal=0;
-	for(int chan=0;chan<NUM_CHANNELS;chan++) {
-	   meanVal+=fVoltBuffer[chip][chan][samp];
-	}
-	meanVal/=NUM_CHANNELS;
-	for(int chan=0;chan<NUM_CHANNELS;chan++) {
-	   fVoltBuffer[chip][chan][samp]-=meanVal;
-	}
-     }
+    for(int samp=0;samp<SAMPLES_PER_COL;samp++)  {
+      Double_t meanVal=0;
+      for(int chan=0;chan<NUM_CHANNELS;chan++) {
+	meanVal+=fVoltBuffer[chip][chan][samp];
+	//	if(samp==10) {
+	//	  std::cout << "SAMP10: " << chip << "\t" << chan << "\t" << fVoltBuffer[chip][chan][samp] << "\n";
+	//	}
+	  
+      }
+      meanVal/=NUM_CHANNELS;
+      //      std::cout << chip << "\t" << samp << "\t" << meanVal << "\n";
+      for(int chan=0;chan<NUM_CHANNELS;chan++) {
+	fVoltBuffer[chip][chan][samp]-=meanVal;
+      }
+    }
   }
 
 }

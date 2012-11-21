@@ -12,6 +12,8 @@
 #pragma link C++ class McpTargetDisplay+;
 #pragma link C++ class WaveformGraph+;
 #pragma link C++ class FFTGraph+;
+#pragma link C++ class CreamTeaPmtHit+;
+#pragma link C++ class CreamTeaHitEvent+;
 
 #endif
 
