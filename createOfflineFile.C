@@ -39,10 +39,16 @@ void createOfflineFile() {
   TStopwatch stopy;
   stopy.Start();
 
-  Int_t numEvents=10000;
+  Int_t numEvents=1000;
 
-  myTarget->setSoftTrigMode(1);
-  myTarget->setTrigThresh(2000);
+  myTarget->setSoftTrigMode(0);
+
+  //  UInt_t threshArray[4]={1750,1750,1750,1750};
+
+  UInt_t globalThreshold=2000;
+  UInt_t threshArray[4]={globalThreshold,globalThreshold,globalThreshold,globalThreshold};
+  myTarget->setTrigThresh(threshArray);
+
   myTarget->setTrigPolarity(0);
   myTarget->setWbias(800);
   //  myTarget->enablePedestal(1);

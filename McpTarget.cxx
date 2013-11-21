@@ -52,7 +52,11 @@ McpTarget::McpTarget(int offlineMode)
     fThePci.sendData(CLEAR_EVENT_CPCI_BOARD_MASK);
 #else
     
-    if (fTheUsb.createHandles() != true) {
+    //At some point will make this configurable
+    Int_t busNumbers[4]={2,2,2,2};
+    Int_t devNumbers[4]={7,2,8,3};
+
+    if (fTheUsb.createHandles(busNumbers,devNumbers,4) != true) {
       std::cerr << "USB failed to initalize.\n";
       exit(0);
     }
@@ -500,26 +504,44 @@ void McpTarget::setWbias(UInt_t value)
 
 void McpTarget::setTrigThresh(UInt_t value)
 {
+  UInt_t threshArray[4];
+  for(int i=0;i<4;i++) {
+    threshArray[i]=value;
+  }
+  setTrigThresh(threshArray);
+}
+
+void McpTarget::setTrigThresh(UInt_t value[4])
+{
 
   if(fOfflineMode) {
     std::cerr << "Running in offline mode can't set trigger threshold\n";
     return;
   }
   UInt_t asicMasks[4]={0x0000,0x4000,0x8000,0xc000};
-
-  for(int asic=0;asic<NUM_TARGETS;asic++) {
-    UInt_t dataVal=TRIG_THRESH_MASK;
-    UInt_t tempValue=value|asicMasks[asic];
-    dataVal |= (tempValue&0xffff) << TRIG_THRESH_SHIFT;
-
-#ifdef READOUT_MCP_CPCI
-    fThePci.sendData(dataVal);
-#else
-    fTheUsb.sendData(dataVal);
-#endif
+  if(fNumTargetModules==0) {    
+    fNumTargetModules=fTheUsb.getNumHandles();
   }
-  fThresholdValue=value;
-
+  if(fNumTargetModules==0) {
+    std::cerr << "fNumTargetModules " << fNumTargetModules << "\n";
+    return;
+  }
+  for(int module=0;module<this->fNumTargetModules;module++) {
+  
+    
+    for(int asic=0;asic<NUM_TARGETS;asic++) {
+      UInt_t dataVal=TRIG_THRESH_MASK;
+      UInt_t tempValue=value[module]|asicMasks[asic];
+      dataVal |= (tempValue&0xffff) << TRIG_THRESH_SHIFT;
+      
+#ifdef READOUT_MCP_CPCI
+      fThePci.sendData(dataVal);
+#else
+      fTheUsb.sendData(dataVal,module+1);
+#endif
+    }
+    fThresholdValue[module]=value[module];
+  }
 }
 
 void McpTarget::setTermValue(Int_t f100, Int_t f1k, Int_t f10k) 
@@ -699,4 +721,9 @@ void McpTarget::openOutputFile(char fileName[180])
   fTheOutputFile = new TFile(fileName,"RECREATE");
   fTheOutputTree = new TTree("mcpTree","Target Output Tree");
   fTheOutputTree->Branch("target","MultiRawTargetModules",&fRawMultiTargetPtr);
+}
+
+Int_t McpTarget::getEventNumber()
+{
+	return fEventNumber;
 }

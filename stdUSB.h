@@ -18,8 +18,8 @@ public:
     ~stdUSB(void);
     int getNumHandles() {return numHandles;}
     int countDevices(void);
-    bool createHandles(void);
-    bool createHandle(int usbDevInd);
+    bool createHandles(int *busNums, int *devNums, int expNum);
+    bool createHandle(int usbDevInd, int busNum=-1,int devNum=-1);
     bool freeHandles(void);;
     bool freeHandle(int usbDevInd);
     //bool sendData(unsigned short data);
@@ -30,7 +30,7 @@ public:
     static const bool SUCCEED = true;
     static const bool FAILED  = false;
 private:
-    struct usb_device* init(int usbDevInd);
+    struct usb_device* init(int usbDevInd, int busNum=-1,int devNum=-1);
 
     #define INVALID_HANDLE_VALUE NULL
     #define USB_TOUT_MS 2000 //200 ms

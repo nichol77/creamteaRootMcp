@@ -41,7 +41,8 @@ class McpTarget
   void enablePedestal(Int_t flag);
   void setWbias(UInt_t value);
   void setTrigThresh(UInt_t value);
-  UInt_t getTrigThresh() { return fThresholdValue;}
+  void setTrigThresh(UInt_t value[4]);
+  UInt_t getTrigThresh(int whichModule=0) { return fThresholdValue[whichModule];}
   void setTermValue(Int_t f100, Int_t f1k, Int_t f10k);
   void setTrigPolarity(Int_t flag); ///< 1 is negative, 0 is positive
   //  void getMemAddress(UInt_t memAddrSpace, UInt_t &rowLoc, UInt_t &colLoc,
@@ -58,6 +59,7 @@ class McpTarget
   void fillVoltageArray(MultiTargetModules *multiTargetPtr);
   void openOutputFile(char filename[]);
   void saveOutputFile();
+  Int_t getEventNumber();
 
 
  private:
@@ -69,7 +71,7 @@ class McpTarget
   Int_t fTermMode; ///< 100, 1k, 10k 
   Int_t fSampMode; ///< Unclears
   Int_t fExtTrigMode; ///< On or off
-  UInt_t fThresholdValue;
+  UInt_t fThresholdValue[MAX_TARGET_MODULES];
   Int_t fEventNumber; ///< Software event number
   Int_t fTargetEventNumber; ///< Event counter from Target??
   Int_t fNumPedEvents; ///< Number of pedestal events

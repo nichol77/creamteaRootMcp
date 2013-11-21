@@ -21,7 +21,8 @@ void runOfflineTargetDisplay() {
 
 //  TFile *offlineFile = new TFile("outFiles/outFile240310.root");
 //  TFile *offlineFile = new TFile("data/outputFile257.root"); //LED(100Hz) + HV
-  TFile *offlineFile = new TFile("data/outputFile109.root"); // HV
+//  TFile *offlineFile = new TFile("data/outputFile109.root"); // HV
+  TFile *offlineFile = new TFile("data/outputFile228.root"); // HV
 
   McpTargetDisplay *targetPtr = new McpTargetDisplay(1,offlineFile);
   targetPtr->startEventDisplay();

@@ -38,10 +38,21 @@ void runTargetDisplay() {
   McpTargetDisplay *displayPtr = new McpTargetDisplay();
   McpTarget *targetPtr = displayPtr->getMcpTargetPointer();
   targetPtr->openOutputFile(outName);
-  targetPtr->setSoftTrigMode(1);
-  targetPtr->setTrigThresh(2000);
+  std::cout << "setSoftTrigMode\n";
+  targetPtr->setSoftTrigMode(0);
+  std::cout << "setTrigThresh\n";
+  //UInt_t threshArray[4]={2030,2100,2150,2030};
+  //  UInt_t threshArray[4]={2030,2030,2010,2010};
+
+  UInt_t globalThreshold=1750;
+  UInt_t threshArray[4]={globalThreshold,globalThreshold,globalThreshold,globalThreshold};
+  targetPtr->setTrigThresh(threshArray);
+  std::cout << "setTrigPolarity\n";
   targetPtr->setTrigPolarity(0);
-  targetPtr->setWbias(800);
+  std::cout << "setWbias\n";
+  targetPtr->setWbias(800);  //800
+
+  std::cout << "About to start display\n";
   displayPtr->startEventDisplay();  
   
 }

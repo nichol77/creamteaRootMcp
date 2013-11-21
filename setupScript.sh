@@ -23,7 +23,7 @@ done
 for INDEX in `seq 1 $NUM_LINES`; do
     BUS=${BUS_ARRAY[$INDEX]}
     DEVICE=${DEVICE_ARRAY[$INDEX]}
-#    echo $BUS $DEVICE
+    echo $BUS $DEVICE
     chmod a+rw /dev/bus/usb/${BUS}/${DEVICE}
 done
 

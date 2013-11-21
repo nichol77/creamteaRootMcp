@@ -52,6 +52,13 @@ TGraph *getBoxCar(TGraph *grWave, Int_t halfWidth)
   Double_t *inY = grWave->GetY();
   Double_t *inX = grWave->GetX();
   Int_t length=grWave->GetN();
+  //RJN check for non-valid numbers
+  for(int i=0;i<length;i++) {
+    if(inY[i]<-4096 || inY[i]>4096) {
+      //      std::cout << i << "\t" << inY[i] << "\n";
+      inY[i]=0;
+    }
+  }
   Double_t *smoothY = new Double_t[length];
   for(int i=0;i<length;i++) {
     smoothY[i]=0;
@@ -265,7 +272,7 @@ void McpTargetDisplay::refreshEventDisplay()
 	   fTheMultiPtr->targetData[fWhichModule].raw_scaler[3][0]);
    fMidMidPave->AddText(textLabel);
    sprintf(textLabel,"Scaler1 -- %u,%u,%u,%u",
-	   fTheMultiPtr->targetData[fWhichModule].raw_scaler[0][0],
+	   fTheMultiPtr->targetData[fWhichModule].raw_scaler[0][1],
 	   fTheMultiPtr->targetData[fWhichModule].raw_scaler[1][1],
 	   fTheMultiPtr->targetData[fWhichModule].raw_scaler[2][1],
 	   fTheMultiPtr->targetData[fWhichModule].raw_scaler[3][1]);
@@ -410,7 +417,7 @@ void McpTargetDisplay::refreshEventDisplay()
    for(int pixel=0;pixel<NUM_TOTAL_CHANNELS;pixel++) {
       //      RJN change 28/04010
      Int_t chan=pixel;
-     //      Int_t chan=pmtPixelToChan[pixel];
+     //Int_t chan=pmtPixelToChan[pixel];
      //     std::cerr << pixel << "\t" << chan << "\n";
      sprintf(graphName,"Pixel %d",pixel+1);
      if(gr[pixel]) delete gr[pixel];
@@ -440,10 +447,11 @@ void McpTargetDisplay::refreshEventDisplay()
      Double_t *yVals=wv[pixel]->GetY();
      Double_t sqVal=0;
      for(int i=0;i<wv[pixel]->GetN();i++) {
+       //       if(yVals[i]>4096) yVals[i]=0;
        Double_t tempVal=yVals[i]*yVals[i];
        if(sqVal<tempVal) sqVal=tempVal;
      }
-     //     std::cout << pixel << "\t" << sqVal << "\n"; 
+     //     std::cout << pixel << "\t" << sqVal << "\t" << wv[pixel]->GetN() << "\n"; 
      if(sqVal>maxVal)
        maxVal=sqVal;
      wv[pixel]->SetTitle(graphName);
@@ -517,7 +525,7 @@ int McpTargetDisplay::displayNextEvent()
     fTheMultiPtr=fTheMcpTarget.getTargetData(); //Do not delete
   }
   else {
-    //    std::cout << fTheOfflineEntry << "\t" << fTheOfflineTree->GetEntries() << "\n";
+    //std::cout << fTheOfflineEntry << "\t" << fTheOfflineTree->GetEntries() << "\n";
     if(fTheOfflineEntry<fTheOfflineTree->GetEntries()) {
       fTheOfflineTree->GetEntry(fTheOfflineEntry);
       if(fTheMultiPtr) 

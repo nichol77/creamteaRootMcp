@@ -37,15 +37,25 @@ stdUSB::~stdUSB(void) {
  * @param  
  * @return bool -- SUCCEED or FAILED
  */
-bool stdUSB::createHandles(void) {
+bool stdUSB::createHandles(int *busNums, int *devNums, int expNum) {
   //printf("stdUSB::createHandles()\n");
   
+  int requestDevice=0;
   int count=countDevices();
+  if(expNum==count) {
+    requestDevice=1;
+  }
+
+    
   //int count=1;
   int retval=0;
   if(count>0) {
     for(int usbDevInd=0;usbDevInd<count;usbDevInd++) {
-      retval+=createHandle(usbDevInd);
+      if(requestDevice)
+	retval+=createHandle(usbDevInd,busNums[usbDevInd],devNums[usbDevInd]);
+      else {
+	retval+=createHandle(usbDevInd);//,busNums[usbDevInd],devNums[usbDevInd]);
+      }
     }
   }
   if(numHandles!=count) {
@@ -61,7 +71,7 @@ bool stdUSB::createHandles(void) {
  * @param  
  * @return bool -- SUCCEED or FAILED
  */
-bool stdUSB::createHandle(int usbDevInd) {
+bool stdUSB::createHandle(int usbDevInd, int busNum, int devNum) {
   //printf("stdUSB::createHandle(%d)\n",usbDevInd);
     int retval;
     struct usb_device *dev;
@@ -69,7 +79,7 @@ bool stdUSB::createHandle(int usbDevInd) {
     if (stdHandle[usbDevInd] != INVALID_HANDLE_VALUE)
        goto ok;
     
-    dev = stdUSB::init(usbDevInd);
+    dev = stdUSB::init(usbDevInd,busNum,devNum);
     retval = (long) dev;
 
     if (retval == 0) {
@@ -123,7 +133,7 @@ fail:
  * @param  
  * @return usb_device* -- A pointer to USBFX2 libusb dev entry, or INVALID_HANDLE_VALUE on failure.
  */
-struct usb_device* stdUSB::init(int usbDevInd) {
+struct usb_device* stdUSB::init(int usbDevInd, int busNum, int devNum) {
    //printf("stdUSB::init()\n");
     struct usb_bus *usb_bus;
     struct usb_device *dev;
@@ -133,13 +143,31 @@ struct usb_device* stdUSB::init(int usbDevInd) {
     usb_find_busses();
     usb_find_devices();
     int numFound=0;
+    char testLabel[12];
+    if(busNum>=0 && devNum>=0) {
+      sprintf(testLabel,"%03d/%03d",busNum,devNum);
+    }
 
     /* usb_busses is a linked list which after above init function calls contains every single usb device in the computer.
         We need to browse that linked list and find EZ USB-FX2 by VENDOR and PRODUCT ID */
     for (usb_bus = usb_busses; usb_bus; usb_bus = usb_bus->next) {
         for (dev = usb_bus->devices; dev; dev = dev->next) {
             if ((dev->descriptor.idVendor == USBFX2_VENDOR_ID) && (dev->descriptor.idProduct == USBFX2_PRODUCT_ID)) {
-	      if(usbDevInd==numFound) {
+	     
+	      
+	      char devLabel[12];
+	      sprintf(devLabel,"%s/%s",dev->bus->dirname, dev->filename);
+      
+	      
+	      
+	      if(busNum>=0 && devNum>=0) {
+		if(strncmp(devLabel,testLabel,7)==0) {
+		  printf("init: found device: %s/%s\n",dev->bus->dirname, dev->filename);
+		  return dev;		  
+		}
+		//		printf("testLabel %s devLabel %s strncmp %d\n",testLabel,devLabel,);
+	      }
+	      else if(usbDevInd==numFound) {
 		printf("init: found device: %s/%s\n",dev->bus->dirname, dev->filename);
 		return dev;
 	       }
@@ -279,7 +307,10 @@ bool stdUSB::readData(unsigned short * pData, int l, int* lread)// throw(...)
   //  printf("stdUSB::readData()\n");
    int retVal=0;
    int numRead[MAX_STDUSB_DEVICES];
-   for(int usbDevInd=0;usbDevInd<numHandles;usbDevInd++) {
+   //RJN hack to fix xDONE issues
+   int readOrder[4]={3,2,1,0};
+   for(int tempInd=0;tempInd<numHandles;tempInd++) {
+     int usbDevInd=readOrder[tempInd];
      retVal+=readData(&pData[usbDevInd*l],l,&numRead[usbDevInd],usbDevInd);
       
    }
