@@ -17,6 +17,8 @@ INC_RJN_UTIL=-I$(RJN_UTIL_INC_DIR)
 else
 RJN_UTIL_LIB_DIR=/usr/local/lib
 RJN_UTIL_INC_DIR=/usr/local/include
+LD_RJN_UTIL=-L$(RJN_UTIL_LIB_DIR)
+INC_RJN_UTIL=-I$(RJN_UTIL_INC_DIR)
 endif
 
 #Toggles the FFT functions on and off

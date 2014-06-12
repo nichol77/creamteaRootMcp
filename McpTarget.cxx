@@ -401,15 +401,18 @@ void McpTarget::loadPedestal()
 {
   Int_t value;
   std::ifstream PedFile;
-  PedFile.open("calib/pedFile.txt");
+  PedFile.open("pedestal.txt");
   if(!PedFile.is_open()) {
-    PedFile.open("/home/creamtea/rootMcp/branches/multiusb/calib/pedFile.txt");
-    if(PedFile.is_open()) {
-      std::cout << "Reading /home/creamtea/rootMcp/branches/multiusb/calib/pedFile.txt\n";
+    PedFile.open("calib/pedFile.txt");
+    if(!PedFile.is_open()) {
+      PedFile.open("/home/creamtea/rootMcp/branches/multiusb/calib/pedFile.txt");
+      if(PedFile.is_open()) {
+	std::cout << "Reading /home/creamtea/rootMcp/branches/multiusb/calib/pedFile.txt\n";
     }
-  }
-  else {
-     std::cout << "Reading calib/pedFile.txt\n";
+    }
+    else {
+      std::cout << "Reading calib/pedFile.txt\n";
+    }
   }
     
   if(PedFile.is_open()) {

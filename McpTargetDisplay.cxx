@@ -220,8 +220,12 @@ void McpTargetDisplay::refreshEventDisplay()
    fMidLeftPave = new TPaveText(0,0.01,1,1);
    fMidLeftPave->SetName("midLeftPave");
    fMidLeftPave->SetBorderSize(0);
-   fMidLeftPave->SetFillColor(0);
+   fMidLeftPave->SetFillColor(0);  
    fMidLeftPave->SetTextAlign(13);
+   if(fOfflineMode) {
+     sprintf(textLabel,"Entry -- %d",fTheOfflineEntry);
+     fMidLeftPave->AddText(textLabel);
+   }
    sprintf(textLabel,"Row -- %d,%d,%d,%d",
 	   fTheMultiPtr->targetData[fWhichModule].rowLoc[0],
 	   fTheMultiPtr->targetData[fWhichModule].rowLoc[1],
