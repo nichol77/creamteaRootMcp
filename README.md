@@ -26,8 +26,8 @@ loadTargetLibs.C::
   Just a wrapper that exposes some of the underlying nuts and bolts of the DAQ interface.
 
 Links
-Doxygen "documentation"::
-  http://www.hep.ucl.ac.uk/~rjn/creamtea/rootMcp/doxygen/
+* Doxygen "documentation"::
+   http://www.hep.ucl.ac.uk/~rjn/creamtea/rootMcp/doxygen/
   
-GitHub:
-  https://github.com/nichol77/creamteaRootMcp
+* GitHub:
+   https://github.com/nichol77/creamteaRootMcp
