@@ -109,7 +109,7 @@ Int_t McpTarget::justReadBuffer()
 #endif
 
   if(fDumpRawHexData) {
-    ofstream HexDump("eventHexDump.txt");
+    std::ofstream HexDump("eventHexDump.txt");
     for(int i=0;i<BUFFERSIZE;i++) {
       HexDump << std::dec << i << "\t" << std::hex << "\t" << fReadoutBuffer[i] << "\n";
     }
@@ -147,7 +147,7 @@ void McpTarget::generatePedestals()
   Int_t countStuff[NUM_ROWS][NUM_COLS]={{0}};
   
   Int_t row,col;
-  TFile *fpTemp = new TFile("pedFile.root","RECREATE");
+  TFile *fpTemp = new TFile("pedestals/pedFile.root","RECREATE");
   TTree *pedTree = new TTree("pedTree","Tree of pedestal thingies");    
   pedTree->Branch("target","RawTargetData",&fRawTargetDataPtr);
   //  pedTree->Branch("values",&fReadoutBuffer[0],"values[32810]/s");

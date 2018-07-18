@@ -1,4 +1,4 @@
-gSystem->Reset();
+//gSystem->Reset();
 
 void runTargetDisplay() {
   //  gSystem->AddIncludePath(gSystem->ExpandPathName("-I${EVENT_READER_DIR}"));
@@ -11,9 +11,9 @@ void runTargetDisplay() {
   //  gSystem->Load("libMathMore.so");
   //  gSystem->Load("libRootFftwWrapper.so");   
 
-  gSystem->Load("libGraf.so");  
-  gSystem->Load("libPhysics.so");  
-  gSystem->Load("libMcpTargetRoot.so");
+   //  gSystem->Load("libGraf.so");  
+   //  gSystem->Load("libPhysics.so");  
+   //  gSystem->Load("libMcpTargetRoot.so");
 
 //   TChain *fred=0; //Will this work?
   Int_t run=0;
